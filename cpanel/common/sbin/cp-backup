@@ -1,0 +1,42 @@
+#!/bin/bash
+
+#  
+# Backup a file before replacing it and create a diff. 
+# 
+# Usage: cp-backup SOURCE_FILE DEST_FILE
+#
+# @since 2.4
+# @version 2.4.20100521
+# @author yclian
+
+if [[ -n $1 && -f $1 ]]; then
+    SOURCE_FILE=$1 
+else
+    echo "Source '$1' does not exist or is invalid!"
+    exit 1
+fi
+
+DEST_FILE=$2
+# If DEST_FILE is actually a directory, then we will make its name to be the 
+# same with SOURCE_FILE.
+if [[ -d $DEST_FILE ]]; then
+    DEST_FILE=$(dirname $DEST_FILE)/$(basename $DEST_FILE)/$(basename $SOURCE_FILE)
+    # Removing extra '/', e.g. //tmp
+    DEST_FILE=$(echo $DEST_FILE | sed -e 's/\/\//\//')
+fi
+
+# Copy the file with a backup
+# ------------------------------------------------------------------------------
+cp -f --backup=numbered $SOURCE_FILE $DEST_FILE 
+
+# Diff
+# ------------------------------------------------------------------------------
+
+# Get the latest file of given base, and retrieve the line 2.'
+DEST_FILE_BACKUP=`ls -1t $(dirname $DEST_FILE) | grep -G "^$(basename $DEST_FILE)" | grep -i -v DIFF | awk 'NR == 2 {print $1}'`
+
+# Then, we will do a DIFF backup, only if we could find the backup file
+if [ ! -z $DEST_FILE_BACKUP ]; then
+    diff $(dirname $DEST_FILE)/$DEST_FILE_BACKUP $SOURCE_FILE > `dirname $DEST_FILE`/${DEST_FILE_BACKUP}.diff
+fi
+

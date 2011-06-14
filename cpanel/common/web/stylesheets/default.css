@@ -1,0 +1,58 @@
+/**
+ * Common CSS file to decorate both WHM and Frontend.
+ * 
+ * @author yclian
+ * @since 2.4
+ * @version 2.5.20100609
+ */
+ 
+hr{
+    border: 0;
+    border-top: 1px solid #aaaaaa;
+    margin-top: 1.5em;
+}
+
+/*******************************************************************************
+ * Dialogs
+ ******************************************************************************/
+
+div.dialog{
+    background: #f0f0f0;
+    border: 1px solid #aaaaaa;
+    padding: 1em;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+div#dialog-error{
+    background: #ffebe8;
+    border-color: #b02500;
+}
+
+div#dialog-info{
+    background: #dcf5ff;
+    border-color: #0088c1;
+}
+
+div#errors>ul{
+    margin: 0.5em !important;
+}
+
+div.dialog p{
+    margin: 0 0 1em 0 !important;
+}
+
+div.dialog p:last-child{
+    margin: 0 !important;
+}
+
+/*******************************************************************************
+ * Mini App
+ ******************************************************************************/
+
+iframe.mini-portal{
+    background: #eeeeee;
+    border: 0;
+    width: 100%;
+    height: 85%;
+}

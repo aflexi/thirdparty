@@ -1,0 +1,104 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: php-check - Check PHP's version and dependencies.
+# Sypnosis: php-check
+# Description: Check PHP's version as well as required dependencies. Perform
+#   also installation on missing dependencies.
+#
+#   PHP_EXEC can be specified to override the PHP executable used in this 
+#   script.
+#
+# Author: yclian
+# Since: 2.4
+# Version: 2.6.1.20100811
+# Notes:
+#   PHP_EXEC can be specified to override the PHP executable used in this 
+#   script.
+# ------------------------------------------------------------------------------
+
+if [ ! $PHP_EXEC ]; then PHP_EXEC="/var/cpanel/3rdparty/bin/php"; fi
+# Used to hold dependencies that have to installed by EasyApache
+MISSING_PHP_DEPS=""
+
+# Check PHP version if it's or greater than 5.2.
+check_version(){
+    # tail -1 is required, as we want to exclude HTTP headers plus -q may not 
+    # work for CGI version.
+    PHP_VERSION_ID="$($PHP_EXEC $(dirname $0)/php-getversionid | tail -1)"
+    if [ $PHP_VERSION_ID -lt 50200 ]; then
+	    echo "PHP version ($PHP_VERSION_ID) is not up to requirement (>= 5.2)" >&2
+	    return 1
+	else	    
+        echo "PHP version: $PHP_VERSION_ID" 
+        return 0
+    fi
+}
+
+# Check if a module is loaded/installed by PHP. Otherwise, perform an installa-
+# tion. This function accepts an optional second argument for custom name used 
+# for installation.
+check_install(){
+
+    PHP_MOD_TARGET=$2
+
+    # 2nd parameter is the target name of PECL.
+    if [ ! $2 ]; then
+        PHP_MOD_TARGET=$1
+    fi
+
+    eval "$(dirname $0)/php-checkmodule $1"
+    if [ $? -eq 1 ]; then
+        echo "Installing PHP module '$PHP_MOD_TARGET'.. (rerun script or manual install if fail)"
+        eval "$(dirname $PHP_EXEC)/pecl install $PHP_MOD_TARGET"
+    fi
+}
+
+check_for_easyapache(){
+    for i in $*
+        do
+            if [ "$($PHP_EXEC -m | grep -e "^$i\$" | wc -l)" -lt 1 ]; then
+                MISSING_PHP_DEPS="$MISSING_PHP_DEPS $i"
+            fi
+        done
+        
+    return 0
+}
+
+run_easy_apache(){
+        
+    if [ ! -z "$MISSING_PHP_DEPS" ]
+        then
+            echo "Some dependencies have to be installed with EasyApache (makecpphp): $MISSING_PHP_DEPS"
+            echo "Go to WHM > Software > EasyApache or Run makecpphp with an EasyApache profile."
+            read -p "Press ENTER to continue"
+            return 1
+            # $ROOT_DIR/scripts/easyapache
+            # if [ $? -gt 0 ]; then
+            #    return 1
+            # fi
+        else
+            echo "All PHP depedencies seem installed.. EasyApache skipped."
+    fi
+    return 0
+}
+
+main(){
+
+    # Dependencies
+    source "$(dirname $0)/inc-okexit"
+    
+    echo "Checking for PHP dependencies.."
+    
+    check_version &&
+    check_install json &&
+    # NOTE [yclian 20100707] We have to use CURL as cPanel's EasyApache doesn't
+    # support the http module.
+    # check_install http pecl_http
+    
+    check_for_easyapache curl &&
+    run_easy_apache
+    
+    ok_exit
+}
+
+main

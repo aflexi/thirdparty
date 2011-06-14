@@ -1,0 +1,148 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: Script to install WHMCS CDN Enabler.
+# Sypnosis: afx-cppinstall ROOT_DIR
+# Description: 
+# Author: yingfan
+# Since: 2.4
+# Version: 2.6.1.20100810
+# ------------------------------------------------------------------------------
+
+# Settings / Unit-Testable
+# ------------------------------------------------------------------------------
+set -x
+
+# SOURCE_DIR, where the installation files are at.
+if [ ! $SOURCE_DIR ]; then
+    export SOURCE_DIR="$(dirname $0)/../.."
+fi
+
+# WHMCS directory
+read -p "Enter directory for WHMCS (Empty for current working directory): " WHMCS_DIR
+
+if [ -z "$WHMCS_DIR" ]; then
+    export WHMCS_DIR=`cd $SOURCE_DIR/../..; pwd`
+fi
+
+check_files(){
+    
+    echo "Checking installation files ($SOURCE_DIR).."
+
+    if [[ ! -f "$SOURCE_DIR/LICENSE.txt" || 
+	  ! -d "$SOURCE_DIR/common" || 
+	  ! -d "$SOURCE_DIR/includes" || 
+	  ! -d "$SOURCE_DIR/modules" ||
+	  ! -f "$SOURCE_DIR/includes/hooks/aflexi_sync.php" ]]; then
+    	echo "Some files are missing, have you set the SOURCE_DIR variable? Otherwise, please download again or contact support@aflexi.net." >&2
+	    return 1
+    fi
+    
+}
+
+check_whmcs(){
+
+    echo "Checking WHMCS directory: $WHMCS_DIR .."
+
+    if [[ ! -d $WHMCS_DIR || 
+	    ! -f "$WHMCS_DIR/domainchecker.php" ]]; then
+	echo "Some WHMCS files are missing!" >&2
+	return 1
+    fi
+    
+}
+
+prompt_license(){
+    
+    read -p "Do you agree with the above license [y/N]? "
+    case "$REPLY" in
+	[yY]) 
+	    echo "Continuing installation.."
+	    ;;
+	[nN])
+	    echo "Aborted!"
+	    exit 0
+	    ;;
+	*)
+	    prompt_license
+    esac
+}
+
+initialize_dirs(){
+
+    DIRS="$WHMCS_DIR/includes/aflexi,\
+        $WHMCS_DIR/modules/admin/aflexi_cdn"
+    
+    echo "Initializing directories.."
+    
+    for DIR in `echo $DIRS | tr ',' '\n'`;
+        do
+            if [ ! -d $DIR ]; then
+                mkdir -vp $DIR
+            fi
+        done;
+}
+
+copy_files(){
+
+    echo "Copying files.."
+
+    # Copy the common files first.
+    cp -vrf $SOURCE_DIR/includes/* $WHMCS_DIR/includes &&
+    cp -vrf $SOURCE_DIR/modules/* $WHMCS_DIR/modules &&    
+    
+    
+    return $?
+}
+
+set_permissions(){
+    # Execute is needed to access to dirs.
+    chmod -vR 755 "$WHMCS_DIR/includes/aflexi" &&
+    chmod -vR 755 "$WHMCS_DIR/includes/hooks" &&
+    chmod -vR 755 "$WHMCS_DIR/modules/admin/aflexi_cdn"
+}
+
+upgrade() {
+    if [ -f "$WHMCS_DIR/includes/hooks/paidorder.php" ]; then
+        rm -f "$WHMCS_DIR/includes/hooks/paidorder.php"
+    fi
+}
+
+check_error(){
+
+    EXIT_CODE="$?"
+
+    if [ $EXIT_CODE -gt 0 ]; then
+        echo "Aborted! ($EXIT_CODE)"
+        exit $EXIT_CODE
+    fi
+}
+
+main(){
+    check_files &&
+    check_whmcs
+    
+    check_error
+
+    # Testing against sandbox will skip license check. 
+    # YOU SHOULD NOT REMOVE THE FOLLOWING LICENSE PROMPT BLOCK FOR ANY POSSIBLE 
+    # LEGAL REASONS - UNLESS LEGALLY APPOVED.
+    if [ ! $CPANEL_SANDBOX ]; then
+        less "$SOURCE_DIR/LICENSE.txt"
+        prompt_license
+    else
+        echo "Skipped license prompt. Please read $SOURCE_DIR/LICENSE.txt if \
+you are human."
+    fi
+
+    initialize_dirs &&
+    copy_files &&
+    set_permissions &&
+    upgrade &&
+    check_error
+
+    echo "Installation successful!"
+    exit 0
+}
+
+main
+

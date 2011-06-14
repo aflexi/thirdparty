@@ -1,0 +1,35 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Description: Check if a Perl module is in the @INC.
+# Usage: ./perl-checkmodule MODULE_NAME
+# Since: 2.4
+# Version: 2.4.20100525
+# Author: yclian
+# ------------------------------------------------------------------------------
+
+check_module(){
+
+    if [ ! $1 ]; then
+        echo "Aborted! Module is not specified."
+        exit 1
+    fi
+
+    EVAL_OUTPUT=`eval "perl -M$1 -e1 2>&1 | grep -E \"Can't locate $1\.pm in @INC\""`
+
+    if [ -n "$EVAL_OUTPUT" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+check_module $1
+EXIT_CODE="$?"
+
+if [ $EXIT_CODE -gt 0 ]; then
+    echo "Could not find module '$1'"
+else
+    echo "Found module '$1'"
+fi
+
+exit $EXIT_CODE

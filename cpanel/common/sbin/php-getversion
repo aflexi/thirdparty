@@ -1,0 +1,20 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: php-getversion - Get the PHP version number.
+# Description: Get the PHP version number, writing it to the standard out.
+#
+#   PHP_EXEC can be specified to override the PHP executable used in this 
+#   script.
+#
+# Since: 2.4
+# Version: 2.4.20100520
+# Auhtor: yclian
+
+if [ ! $PHP_EXEC ]; then PHP_EXEC="`which php`"; fi
+
+# This way works too, but it can be done easier!
+# $PHP_EXEC -version | grep ^PHP | sed -e 's/PHP \([0-9]\.[0-9]\+\(\.[0-9]\+\)*\).*/\1/'
+
+$PHP_VERSION=`$PHP_EXEC -r 'echo phpversion();'`
+echo $PHP_VERSION
+

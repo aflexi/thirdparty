@@ -1,0 +1,52 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Description: Evaluate and get the PHP executable. Note that, CPANEL_HOME
+# and CPANEL_DATA variables have to be set before calling this script.
+# Usage: ./php-getexec
+# Author: yclian
+# Since: 2.4
+# Version: 2.6.1.20100811
+# See: http://docs.cpanel.net/twiki/bin/view/AllDocumentation/WHMDocs/CpsrvdAndPhp
+# ------------------------------------------------------------------------------
+
+# Given the location of PHP executable. Check if it's runnable and print its
+# exit code
+# NOTE [yclian 20100811] No longer used.
+print_php_exec_code(){
+    eval "$1 -r \"return TRUE;\""
+    echo $?
+}
+
+exit_if_ok(){
+    if [ -f "$1" ]; then
+        echo $1
+        exit 0
+    fi
+}
+
+get_php_exec(){
+
+    if [ -f "$CPANEL_DATA/usecpphp" ];
+        then
+            # 1. /var/cpanel/3rdparty/bin/php-cgi
+            exit_if_ok $CPANEL_DATA/3rdparty/bin/php-cgi
+            # 2. /var/cpanel/3rdparty/bin/php
+            exit_if_ok $CPANEL_DATA/3rdparty/bin/php
+            # 3. /usr/local/cpanel/3rdparty/bin/php-cgi
+            exit_if_ok $CPANEL_HOME/3rdparty/bin/php-cgi
+            # 4. /usr/local/cpanel/3rdparty/bin/php
+            exit_if_ok $CPANEL_HOME/3rdparty/bin/php
+        else
+            # 5. /usr/bin/php-cgi
+            exit_if_ok $ROOT_DIR/usr/bin/php-cgi
+            # 6. /usr/bin/php
+            exit_if_ok $ROOT_DIR/usr/bin/php
+    fi
+    # Resort to using the system default. This really shall only happen on
+    # a non-valid cPanel installation.
+    exit_if_ok "$(which php)"
+        
+    exit 1
+}
+
+get_php_exec

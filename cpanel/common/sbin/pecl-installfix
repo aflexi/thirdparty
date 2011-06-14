@@ -1,0 +1,22 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: Script to fix installation issue with PECL or PEAR on /tmp mounted 
+#   with noexec.
+# Sypnosis: pecl-installfix
+# Description: 
+# Author: yclian
+# Since: 2.5.1
+# Version: 2.5.1.20100706
+# See: http://www.nickpack.com/article/how-to-use-pear-pecl-with-tmp-noexec
+# ------------------------------------------------------------------------------
+# Only fix if we have already fixed, i.e. pear* dirs are directories and not
+# symlinks.
+if [ "$(find /tmp -type d -xtype l -name "pear*" | wc -l)" -gt 0 ] ||
+   [ "$(mount -l | grep "/tmp on" | grep noexec | wc -l)" -gt 0 ]; then
+    echo "Fixing PEAR/PECL build directory.."
+    mkdir -vp /root/tmp/pear
+    mkdir -vp /root/tmp/pear-build-root
+    rm -vrf /tmp/pear*
+    ln -vsf /root/tmp/pear /tmp/pear
+    ln -vsf /root/tmp/pear-build-root /tmp/pear-build-root
+fi

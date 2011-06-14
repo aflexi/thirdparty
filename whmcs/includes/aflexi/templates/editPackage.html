@@ -1,0 +1,25 @@
+{% extends 'template.html' %}
+
+{% block title %}
+    {{ 'Synchronized Publishers'|title }}
+{% endblock %}
+
+{% block head %}
+    {% parent %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="addonmodules.php?module=aflexi_cdn&action=listPackages" class="active">Aflexi Packages</a>
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="addonmodules.php?module=aflexi_cdn&action=editPackage&id={{ packageId }}" class="active">Edit Package</a>
+{% endblock %}
+
+{% block content %}
+    {% import 'macros/forms.html' as forms %}
+
+    <iframe src="{{ iframe_url }}" width="100%" height="600px;" scrolling="auto" style="border: 0px none;">
+        You are seeing this because your browser does not support iframe.
+    </iframe>
+    <br /><br />
+{% endblock %}

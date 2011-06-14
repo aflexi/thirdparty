@@ -1,0 +1,29 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: inc-okexit - Function to check if it's OK to exit
+# Sypnosis: ok_exit [EXIT_MSG_OK [EXIT_MSG_NOT_OK]]
+# Since: 2.4
+# Version: 2.4
+# Author: yclian
+# ------------------------------------------------------------------------------ 
+function ok_exit {
+
+    EXIT_CODE="$?"
+    EXIT_MSG_OK="$1"
+    EXIT_MSG_NOT_OK="$2"
+    
+    if [ -z $EXIT_MSG_OK ]; then
+        EXIT_MSG_OK="OK!"
+    fi
+    if [ -z $EXIT_MSG_NOT_OK ]; then
+        EXIT_MSG_NOT_OK="NOT OK!"
+    fi
+    
+    if [ $EXIT_CODE -gt 0 ]; then
+        echo "$EXIT_MSG_NOT_OK ($EXIT_CODE)" >&2
+        exit $EXIT_CODE
+    else
+        echo "$EXIT_MSG_OK"
+        exit 0
+    fi
+}

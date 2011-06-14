@@ -1,0 +1,6 @@
+@import url("vendor/52framework/reset.css");
+
+html, body{
+    background: #ffffff;
+    height: 100%;
+}

@@ -1,0 +1,4 @@
+log_handler: file
+log_storage: app.log
+
+app_home: /tmp

@@ -1,0 +1,13 @@
+xmlrpc:
+    uri: 
+        core: http://api.aflexi.net/core/xmlrpc
+        stats: http://api.aflexi.net/stats/xmlrpc
+portal:
+    url:
+        public: http://portal.aflexi.net
+        mini_publisher: http://portal.aflexi.net/mini_publisher.php
+        mini_operator: http://portal.aflexi.net/mini_operator.php
+
+system:
+    curl: /usr/bin/curl
+    homes: /home

@@ -1,0 +1,25 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: Script to write to existing feature files.
+# Sypnosis: afx-cppinstallfeature
+# Description:
+#   - Requires $CPANEL_HOME. 
+# Author: yclian
+# Since: 2.4
+# Version: 2.4.20100609
+# ------------------------------------------------------------------------------
+set -x
+
+# Write to feature descriptor.
+if [ -z "$(cat $CPANEL_HOME/whostmgr/features | grep cdn)" ]; then
+    echo "cdn:Content Delivery Network" >> $CPANEL_HOME/whostmgr/features
+fi
+
+# Disable CDN in default feature.
+if [ -f $CPANEL_DATA/features/default ]; then
+    if [ -z "$(cat $CPANEL_DATA/features/default | grep cdn=)" ]; then
+        echo "cdn=0" >> $CPANEL_DATA/features/default
+    fi
+else
+    echo "cdn=0" > $CPANEL_DATA/features/default
+fi

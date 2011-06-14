@@ -1,0 +1,25 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: Script to upgrade cPanel CDN Enabler.
+# Sypnosis: afx-cpppreupgrade
+# Description:
+# Author: yingfan
+# Since: 2.10
+# Version: 2.10.20101110
+# ------------------------------------------------------------------------------
+
+set -x
+
+# Detects if there is previous installation of cPanel CDN Enabler
+if [ -d "$CPANEL_AFX_DATA" ]; then
+    #Uninstall old scripts
+    bash "$(dirname $0)/afx-cppuninstall"
+    
+    # As of 2.10,
+    # if $CPANEL_AFX_DATA/whm is not a symlink,
+    # means is old version
+    if [ ! -h "$CPANEL_AFX_DATA/whm" ] ; then
+        #Rename whm to operator
+        mv "$CPANEL_AFX_DATA/whm" "$CPANEL_AFX_DATA/operator"
+    fi
+fi

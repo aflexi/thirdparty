@@ -1,0 +1,37 @@
+{% macro row(id, label, input, required, tip, labelext, inputext) %}
+    <li>
+        <div class="field">
+            <div class="field-label">
+                <label for="{{ id }}">
+                    {{ label }}{% if required %}<em>*</em>{% endif %}
+                </label>
+                {{ labelext }}
+            </div>
+            <div class="field-input">
+                {{ input }}
+                {{ inputext }}
+                {% if tip %}
+                    <span class="tip">{{ tip }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </li>
+{% endmacro %}
+
+{% macro input(id, type, options, tip) %}
+    {% set stripped_tip = tip|default('')|striptags %}
+    {% if not type or
+          type == 'text' or
+          type == 'textarea'
+    %}
+        <input type="{{ type|default('text') }}" id="{{ id }}" name="{{ id }}" value="{{ options.value }}"{% if stripped_tip %} title="{{ stripped_tip }}"{% endif %}/>
+    {% elseif type == 'select' or
+              type == 'multiselect'
+    %}
+        <select id="{{ id }}" name="{{ id }}" title="{{ stripped_tip }}">
+            {% for key, value in options.options %}
+                <option value="{{ key }}" {% if key == options.value %} selected="selected"{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+{% endmacro %}

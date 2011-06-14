@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/framework/!svn/ver/22913/standard/trunk/library/Zend/Loader/Autoloader
+END
+Interface.php
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/framework/!svn/ver/22913/standard/trunk/library/Zend/Loader/Autoloader/Interface.php
+END
+Resource.php
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/framework/!svn/ver/20096/standard/trunk/library/Zend/Loader/Autoloader/Resource.php
+END

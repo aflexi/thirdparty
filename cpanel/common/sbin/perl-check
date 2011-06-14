@@ -1,0 +1,37 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Description: Check Perl's version and dependencies.
+# Usage: ./perl-check
+# Since: 2.4
+# Version: 2.4.20100525
+# Author: yclian
+# ------------------------------------------------------------------------------
+
+# We won't do version check, basically we're just using whatever that
+# comes with the server or cPanel.
+
+check_install(){
+    eval "$(dirname $0)/perl-checkmodule $1"
+    if [ $? -eq 1 ]; then
+        echo "Installing Perl module '$1'.. (rerun script or manual install if fail)"
+        perl -MCPAN -e "install '$1'"
+    fi
+}
+
+main(){
+    
+    # Dependencies
+    source "$(dirname $0)/inc-okexit"
+
+    echo "Checking for Perl dependencies.."
+    
+    check_install "JSON" &&
+    # These should have been installed with cPanel, but we need it for dev.
+    check_install "YAML" &&
+    check_install "Template"
+    
+    ok_exit
+}
+
+main
+

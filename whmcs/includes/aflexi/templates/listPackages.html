@@ -1,0 +1,58 @@
+{% extends 'template.html' %}
+
+{% block title %}
+    {{ 'Synchronized Publishers'|title }}
+{% endblock %}
+
+{% block head %}
+    {% parent %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="addonmodules.php?module=aflexi_cdn&action=listPackages" class="active">Aflexi Packages</a>
+{% endblock %}
+
+{% block content %}
+    {% import 'macros/forms.html' as forms %}
+    
+    <table border="1">
+        <thead>
+            <th>Package Name</th>
+            <th>Data Transfer Limit</th>
+            <th>Hostname Limit</th>
+        </thead>
+        {% if packages %}
+            {% for package in packages %}
+                <tr>
+                    <td>
+                        <a href="addonmodules.php?module=aflexi_cdn&action=editPackage&id={{ package.id }}">
+                            {{ package.name }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if package.bandwidthLimit %}
+                            {{ package.bandwidthLimit }} GB
+                        {% else %}
+                            &infin;
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if package.resourceLimit %}
+                            {{ package.resourceLimit }}
+                        {% else %}
+                            &infin;
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">
+                    No Aflexi packages found
+                </td>
+            </tr>
+        {% endif %}
+    </table>
+    <br /><br />
+{% endblock %}

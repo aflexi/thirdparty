@@ -1,0 +1,42 @@
+#!/bin/bash
+# ------------------------------------------------------------------------------
+# Name: php-checkmodule - Check if a PHP module is loaded.
+# Sypnosis: php-checkmodule MODULE_NAME
+# Description: Check if a PHP module is loaded, by returning 0 or 1 (not OK).
+#
+#   PHP_EXEC can be specified to override the PHP executable used in this 
+#   script.
+#
+# Since: 2.4
+# Version: 2.4.20100526
+# Author: yclian
+# ------------------------------------------------------------------------------
+
+if [ ! $PHP_EXEC ]; then PHP_EXEC="/var/cpanel/3rdparty/bin/php"; fi
+
+check_module(){
+
+    if [ ! $1 ]; then
+        echo "Aborted! Module is not specified."
+        exit 1
+    fi
+
+    EVAL_OUTPUT=`eval "$PHP_EXEC -m | grep -E \"^[[:alnum:]]\" | grep -E \"^\$1$\""`
+
+    if [ -z "$EVAL_OUTPUT" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+check_module $1
+EXIT_CODE="$?"
+
+if [ $EXIT_CODE -gt 0 ]; then
+    echo "Could not find module '$1'"
+else
+    echo "Found module '$1'"
+fi
+
+exit $EXIT_CODE

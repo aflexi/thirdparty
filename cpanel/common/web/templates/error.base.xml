@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+    <head>
+        <title>{{ error_status }}</title>
+    </head>
+    <body>
+        <h1>{{ error_status }}</h1>
+        <p>
+{% if error_description %}
+    {{ error_description }}
+{%else %}
+    {% if error_status|match('/^403/') %}
+        You do not have permission to access the requested page.
+    {% else %}
+        An unknown error has occurred while processing the requested page.
+    {% endif %}
+{% endif %}
+        </p>
+        <hr>
+        <address>{{ server_signature }}</address>
+    </body>
+</html>

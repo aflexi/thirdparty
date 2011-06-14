@@ -1,0 +1,23 @@
+{% extends 'template.html' %}
+
+{% block title %}
+    {{ 'Synchronized Publishers'|title }}
+{% endblock %}
+
+{% block head %}
+    {% parent %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="addonmodules.php?module=aflexi_cdn&action=listPackages" class="active">Aflexi Packages</a>
+{% endblock %}
+
+{% block content %}
+    {% import 'macros/forms.html' as forms %}
+    
+    <script type="text/javascript" language="javascript">
+        window.parent.document.location = "addonmodules.php?module=aflexi_cdn&action={{ callback }}";
+    </script>
+    <br /><br />
+{% endblock %}

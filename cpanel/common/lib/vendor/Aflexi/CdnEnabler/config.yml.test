@@ -1,0 +1,7 @@
+# app
+    app_home: /tmp/somewhere/app.log
+
+# log
+    log_handler: file
+    log_storage: app.log
+    log_level: DEBUG

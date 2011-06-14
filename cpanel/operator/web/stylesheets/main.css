@@ -1,0 +1,312 @@
+/**
+ * CSS file for WHM.
+ * 
+ * @author yclian
+ * @since 2.5
+ * @version 2.6.20100721
+ */
+
+@import url("base/main.css");
+
+body {
+    font:11px verdana,arial,helvetica,clean,sans-serif;
+}
+
+iframe {
+    border: 0pt none;
+}
+
+#content p{
+    font-size: 100%;
+}
+
+/*******************************************************************************
+ * Standard form
+ *
+ * .field               - Field, usually comes with .field-label and .field-
+ *                        -input.
+ * .field-rows          - Field selection consists of multiple rows for select-
+ *                        ion.
+ * .field-rows-columns  - Columns per field-rows.
+ * .field-radios        - Field consists of a collection of radio buttons.
+ *
+ ******************************************************************************/
+#content form{
+    display: block;
+    width: 100%;
+}
+
+#content form > fieldset{
+    display: block;
+    margin: 0.25em;
+    padding: 1em 1.25em;
+}
+
+#content form > fieldset ol,
+#content form > fieldset ul{
+    border: 0;
+    display: block;
+    /* FIX to cPanel forcing #content ol and #content ul to be 95%. */
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#content form > fieldset li{
+    border: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#content form > fieldset .field{
+    display: inline-block;
+    width: 100%;
+}
+
+#content form > fieldset .field .field-radios *{
+    vertical-align: middle;
+}
+
+#content form > fieldset .field .field-radios > li{
+    padding-bottom: 0.5em;
+}
+
+#content form > fieldset .field .field-radios input[type="radio"] + span{
+    margin-left: 0.75em;
+}
+
+#content form > fieldset .field-rows .field-rows-columns{
+    border-top: 1px solid #aaaaaa;
+}
+
+#content form > fieldset .field-rows .field-rows-columns *{
+    vertical-align: top;
+}
+
+#content form > fieldset .field-rows li:first-child .field-rows-columns{
+    border-top: 0;
+}
+
+#content form > fieldset .field-rows .field-rows-columns > li{
+    display: inline-block;
+    margin: 1em 0.1em;
+}
+
+#content form > fieldset .field-rows .field-rows-columns > li:first-child{
+    /*width: 8%;*/
+}
+
+#content form > fieldset .field-rows .field-rows-columns > li:first-child + li{
+    width: 25%;
+}
+
+#content form > fieldset .field-rows .field-rows-columns > li:first-child + li + li{
+    width: 15%;
+}
+
+#content form > fieldset .field-rows .field-rows-columns > li:first-child + li + li + li{
+    width: 15%;
+}
+
+#content form > fieldset .field-rows .field-rows-columns > li:first-child + li + li + li + li{
+    width: 20%;
+}
+
+/*
+ * Package Listing
+ * @since 2.6.2010072X
+ */
+#content form#afx-form-packagelist > fieldset .field-rows .cp-feature-synced > li:first-child{
+    background: transparent url("../images/base/icons/16s-sync.gif") no-repeat scroll 3em center;
+}
+
+#content form#afx-form-packagelist > fieldset .field-rows .cp-feature-unsynced > li:first-child{
+    background: transparent url("../images/base/icons/16s-tick.gif") no-repeat scroll 3em center;
+}
+
+#content form#afx-form-packagelist > fieldset .field-rows .cp-feature-unqualified > li:first-child{
+    background: transparent url("../images/base/icons/16s-x.gif") no-repeat scroll 3em center;
+}
+
+#content form#afx-form-packagelist > fieldset .field-rows .field-rows-columns > li:first-child > span{
+    display: none;
+    text-transform: capitalize;
+}
+
+#content form#afx-form-packagelist > fieldset .field-rows .field-rows-columns > li:first-child + li{
+    /*font-size: 1.20em;*/
+}
+
+#content form#afx-form-packagelist > fieldset .field-rows .field-rows-columns > li:first-child + li a{
+    font-weight: bold;
+}
+
+/* 
+ * User Listing
+ * @since 2.6.1.20100729
+ */
+#content form#afx-form-userlist > fieldset .field-rows .cp-user-synced > li:first-child{
+    background: transparent url("../images/base/icons/16s-sync.gif") no-repeat scroll 3em center;
+}
+
+#content form#afx-form-userlist > fieldset .field-rows .cp-user-unsynced > li:first-child{
+    background: transparent url("../images/base/icons/16s-tick.gif") no-repeat scroll 3em center;
+}
+
+#content form#afx-form-userlist > fieldset .field-rows .cp-user-unqualified > li:first-child{
+    background: transparent url("../images/base/icons/16s-x.gif") no-repeat scroll 3em center;
+}
+
+#content form#afx-form-userlist > fieldset .field-rows .field-rows-columns > li:first-child > span{
+    display: none;
+    text-transform: capitalize;
+}
+
+#content form#afx-form-userlist > fieldset .field-rows .field-rows-columns > li:first-child + li{
+    /*font-size: 1.20em;*/
+}
+
+#content form#afx-form-userlist > fieldset .field-rows .field-rows-columns > li:first-child + li a{
+    font-weight: bold;
+}
+
+/*
+#content form>fieldset ol, #content form>fieldset ul{
+    border: 0;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+#content form>fieldset li{
+    border: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#content form>fieldset>ol>li{
+    border-bottom: 1px solid #aaaaaa;
+}
+
+#content form>fieldset>ol>li:last-child{
+    border-bottom: 0;
+}
+*/
+
+#content form > fieldset .field > .field-label{
+    clear: left;
+    display: inline-block;
+    float: left;
+    line-height: 2em;
+    vertical-align: top;
+    width: 25%;
+}
+
+/**
+ * Required fields or any remarks next to field label.
+ */
+#content form > fieldset .field > .field-label > label > em{
+    font-weight: bold;
+    color: red;
+    margin-left: 0.25em;
+}
+
+#content form > fieldset .field > .field-label > ul.control{
+    display: block;
+    padding-top: 0.5em;
+}
+
+#content form > fieldset .field > .field-label > ul.control > li{
+    display: inline;
+}
+
+#content form > fieldset .field > .field-label > ul.control > li:after{
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    content: "|";
+}
+#content form > fieldset .field > .field-label > ul.control > li:last-child:after{
+    content: "";
+}
+
+#content form > fieldset .field > .field-input{
+    clear: right;
+    display: inline-block;
+    float: left;
+    margin-bottom: 1em;
+    width: 75%;
+}
+
+
+#content form > fieldset .field > .field-input input:hover,
+#content form > fieldset .field > .field-input input:focus{
+    background: #fbfbfb;
+    color: #014d5f;
+}
+
+#content form > fieldset .field > .field-input input[type="text"]{
+    width: 32em;
+}
+
+#content form > fieldset .field > .field-input span.tip{
+    display: block;
+    font-size: 0.9em;
+    padding-top: 0.5em;
+}
+
+/**
+ * The "Sync Now!" form.
+ */
+form#afx-form-syncnow > button{
+    float: left;
+    margin-right: 1em;
+    margin-bottom: 1em;
+}
+
+form#afx-form-syncnow > span > strong{
+    color: #ff0000;
+    font-style: normal;
+    font-weight: bold;
+}
+
+/*
+ * As we place icons inside the #content block, they would have bullets without 
+ * this block. 
+ * @since 2.5.20100705
+ */
+#content ul.icons li{
+    list-style-type: none;
+    text-align: center;
+}
+
+#content ul.icons .icon-container{
+    margin: auto;
+    padding-bottom: 8px;
+    overflow: hidden;
+    width: 32px;
+    height: 32px;
+}
+
+#content ul.icons li#icon-setup .icon-container{
+    background: transparent url("../images/base/icons/32s-settings.gif") no-repeat scroll;
+}
+
+#content ul.icons li#icon-packages .icon-container{
+    background: transparent url("../images/base/icons/32s-packages.gif") no-repeat scroll;
+}
+
+#content ul.icons li#icon-users .icon-container{
+    background: transparent url("../images/base/icons/32s-users.gif") no-repeat scroll;
+}
+
+#content ul.icons li#icon-sync .icon-container{
+    background: transparent url("../images/base/icons/32s-sync.gif") no-repeat scroll;
+}
+
+#content ul.icons li#icon-bandwidth .icon-container{
+    background: transparent url("../images/base/icons/32s-bandwidth.gif") no-repeat scroll;
+}

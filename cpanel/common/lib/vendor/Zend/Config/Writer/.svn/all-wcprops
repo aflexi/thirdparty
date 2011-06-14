@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/framework/!svn/ver/21983/standard/trunk/library/Zend/Config/Writer
+END
+Array.php
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/framework/!svn/ver/20096/standard/trunk/library/Zend/Config/Writer/Array.php
+END
+Ini.php
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/framework/!svn/ver/21983/standard/trunk/library/Zend/Config/Writer/Ini.php
+END
+Xml.php
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/framework/!svn/ver/20096/standard/trunk/library/Zend/Config/Writer/Xml.php
+END
+FileAbstract.php
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/framework/!svn/ver/20096/standard/trunk/library/Zend/Config/Writer/FileAbstract.php
+END

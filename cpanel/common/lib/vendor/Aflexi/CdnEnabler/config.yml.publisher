@@ -1,0 +1,10 @@
+# Alternative config.yml for Publishers
+# -------------------------------------
+
+# app
+    app_home: /var/cpanel/aflexi/publishers/%publisher%
+
+# log
+    log_handler: file
+    log_storage: app.log
+    log_level: INFO

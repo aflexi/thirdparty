@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Script to uninstall cPanel CDN Enabler. Incomplete.
+# 
+# @author yclian
+# @since 2.6.1
+# @version 2.6.1.20100810
+
+# Settings / Unit-Testable
+# ------------------------------------------------------------
+set -x
+
+# ROOT_DIR is typically '', hence, once appended with '/', it's your fs root.
+# Hoever, for the sake of testability, $1 will be the sandbox location. 
+ROOT_DIR=$1
+if [ ! $ROOT_DIR ]; then
+    ROOT_DIR=""
+fi
+CPANEL_HOME="$ROOT_DIR/usr/local/cpanel"
+CPANEL_DATA="$ROOT_DIR/var/cpanel"
+
+# The PHP executable used for running PHP scripts needed by this installation.
+if [ ! $PHP_EXEC ]; then PHP_EXEC="`which php`"; fi
+
+# YOU SHALL NOT BE TOUCHING ANYTHING DOWN HERE, ALTHOUGH YOU 
+# HAVE SUCH FREEDOM!
+# ------------------------------------------------------------
+
+CPANEL_BASE=$CPANEL_HOME/base
+CPANEL_FRONTEND=$CPANEL_BASE/frontend
+CPANEL_WHM=$CPANEL_HOME/whostmgr
+CPANEL_BIN=$CPANEL_HOME/bin
+CPANEL_AFX_HOME=$CPANEL_HOME/3rdparty/aflexi
+CPANEL_AFX_DATA=$CPANEL_DATA/aflexi
+
+rm_whm_files(){
+
+    echo "Deleting Aflexi WHM Add-On.."
+    
+    rm -vrf $CPANEL_WHM/docroot/3rdparty/aflexi &&
+    rm -vrf $CPANEL_WHM/docroot/aflexi &&
+    rm -vrf $CPANEL_WHM/docroot/cgi/addon_cdn.cgi
+    
+    return $?
+}
+
+rm_cpanel_files(){
+
+    echo "Deleting Aflexi cPanel Plugin.."
+    
+    rm -vrf $CPANEL_BASE/3rdparty/aflexi &&
+    rm -vrf $CPANEL_BASE/cdn &&
+    
+    if [ -d $CPANEL_BASE/frontend/x3 ]
+        then
+            rm -vrf $CPANEL_BASE/frontend/x3/cdn
+            rm -vrf $CPANEL_BASE/frontend/x2/cdn
+            rm -vrf $CPANEL_BASE/frontend/x/cdn
+    fi &&
+    
+    $CPANEL_BIN/unregister_cpanelplugin $SOURCE_DIR/frontend/cdn.cpanelplugin &&
+    
+    return $?
+}
+
+rm_cron() {
+    rm -vrf "$ROOT_DIR/etc/cron.hourly/cron.php"
+}
+
+rm_files(){
+
+    rm -vrf $CPANEL_HOME/3rdparty/aflexi &&
+    rm_whm_files &&
+    rm_cpanel_files
+    
+    return $?
+}
+
+
+check_error(){
+
+    EXIT_CODE="$?"
+
+    if [ $EXIT_CODE -gt 0 ]; then
+        echo "Aborted! ($EXIT_CODE)"
+        exit $EXIT_CODE
+    fi
+}
+
+main(){
+
+    rm_files
+    
+    check_error
+    
+    exit 0
+}
+
+main

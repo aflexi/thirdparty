@@ -1,0 +1,7 @@
+# app
+    app_home: /var/cpanel/aflexi
+
+# log
+    log_handler: file
+    log_storage: itest.log
+    log_level: DEBUG

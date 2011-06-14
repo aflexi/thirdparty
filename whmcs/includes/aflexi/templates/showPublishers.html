@@ -1,0 +1,49 @@
+{% extends 'template.html' %}
+
+{% block title %}
+    {{ 'Synchronized Publishers'|title }}
+{% endblock %}
+
+{% block head %}
+    {% parent %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="addonmodules.php?module=aflexi_cdn&action=showPublishers" class="active">Synchronized Publishers</a>
+{% endblock %}
+
+{% block content %}
+    {% import 'macros/forms.html' as forms %}
+    
+    <table border="1">
+        <thead>
+            <th>Full Name</th>
+            <th>Aflexi Username</th>
+            <th>Password</th>
+            <th>Package</th>
+        </thead>
+        {% if publishers %}
+            {% for publisher in publishers %}
+                <tr>
+                    {% if publisher.detail %}
+                        <td><a href="http://cpanel.office.aflexi.com/whmcs/admin/clientssummary.php?userid={{ publisher.detail.id }}">{{ publisher.detail.firstname}} , {{ publisher.detail.lastname }}</a></td>
+                    {% else %}
+                        <td>Unknown</td>
+                    {% endif %}
+                    <td>{{ publisher.key }}</td>
+                    <td>{{ publisher.value }}</td>
+                    <td>{{ publisher.package.value }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3">
+                    No Publisher is synchronized yet
+                </td>
+            </tr>
+        {% endif %}
+    </table>
+    <br /><br />
+{% endblock %}
+

@@ -1,0 +1,47 @@
+{% extends 'template.html' %}
+
+{% block title %}
+    {{ 'Set-Up'|title }}
+{% endblock %}
+
+{% block head %}
+    {% parent %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="addonmodules.php?module=aflexi_cdn&action=setup" class="active">Set-Up</a>
+{% endblock %}
+
+{% block content %}  
+    {% import 'macros/forms.html' as forms %}
+    <form id="afx-form-setup" action="{{ form_action }}" method="post">
+        <fieldset>
+            <legend>Plugin Configurations</legend>
+            <ol>
+                {% set id as 'username' %}
+                {% set tip as  'Your Aflexi CDN user-name used for signing in.' %}
+                {% set input %}
+                    {{ forms.input(id, 'text', ['value': params.username], tip) }}
+                {% endset %}
+                {{ forms.row(id, 'Username', input, true, tip) }}
+                <br>
+                {% set id as 'auth_key' %}
+                {% set tip as 'Authentication key used for integrating WHMCS to Aflexi. Can be generated via <a href="http://portal.aflexi.net/security/list" target="_new">Tools &gt; AuthKey Generator</a>.' %}
+                {% set input %}
+                    {{ forms.input(id, 'text', ['value': params.auth_key], tip) }}
+                {% endset %}
+                {{ forms.row(id, 'Authentication Key', input, true, tip) }}
+                <br>
+                {% set id as 'populate_domain' %}
+                {% set tip as 'Auto populate domain based on the username.' %}
+                {% set input %}
+                    {{ forms.input(id, 'checkbox', ['value': 'enabled', 'checked': params.populate_domain], tip) }}
+                {% endset %}
+                {{ forms.row(id, 'Auto domain assigned', input, false, tip) }}
+            </ol>
+        </fieldset>
+        <hr/>
+        <button type="submit" name="submit" value="1">Save Settings</button>
+    </form>
+{% endblock %}

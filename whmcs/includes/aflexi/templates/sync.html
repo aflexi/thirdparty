@@ -1,0 +1,58 @@
+{% extends 'template.html' %}
+
+{% block title %}
+    {{ 'Synchronize'|title }}
+{% endblock %}
+
+{% block head %}
+    {% parent %}
+{% endblock %}
+
+{% block breadcrumbs %}
+    &nbsp;&gt;&gt;&nbsp;
+    <a href="#" class="active">Sync</a>
+{% endblock %}
+
+{% block content %}
+    {% import 'macros/forms.html' as forms %}
+    
+    <ul>
+        <li><a href="addonmodules.php?module=aflexi_cdn&action=setup">Setup Aflexi CDN Plugin</a></li>
+        <li><a href="addonmodules.php?module=aflexi_cdn&action=showPublishers">Show Synchronized Publishers</a></li>
+        <li><a href="addonmodules.php?module=aflexi_cdn&action=listPackages">Aflexi Packages</a></li>
+    </ul>
+    <br />
+    
+    <form id="afx-form-sync" action="{{ form_action }}" method="post">
+        Please note products configured using Aflexi module will not be shown here
+        <table border="1">
+            <thead>
+                <th>Product Name</th>
+                <th>Is CDN Enabled?</th>
+            </thead>
+            {% if products %}
+                {% for product in products %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>
+                            {% if product.isCDN %}
+                                {% set checked as 'checked="checked"' %}
+                            {% else %}
+                                {% set checked as '' %}
+                            {% endif %}
+                            <input type="checkbox" value="{{ product.id }}" id="product_{{product.id}}" name="products[]" {{ checked }} />
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="2">
+                        No Products
+                    </td>
+                </tr>
+            {% endif %}
+        </table>
+        <br /><br />
+        <button type="submit" name="submit" value="1">Save Settings</button>
+    </form>
+{% endblock %}

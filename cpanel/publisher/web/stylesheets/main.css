@@ -1,0 +1,17 @@
+/**
+ * CSS file for WHM.
+ * 
+ * @author yclian
+ * @since 2.5
+ * @version 2.5.20100608
+ */
+
+@import url("base/main.css");
+
+#mini-portal-frame{
+    width: 100%;
+}
+
+iframe {
+    border: 0pt none;
+}

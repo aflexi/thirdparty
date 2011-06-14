@@ -1,0 +1,8 @@
+all:
+    AA:
+        aa: Aflexi CDN Administration Portal
+        bb: zen
+
+    BB:
+        aa: M/d/Y
+        bb: M/d/Y

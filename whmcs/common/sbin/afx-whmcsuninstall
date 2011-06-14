@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Script to uninstall cPanel CDN Enabler. Incomplete.
+# 
+# @author yclian
+# @since 2.6.1
+# @version 2.6.1.20100810
+
+# Settings / Unit-Testable
+# ------------------------------------------------------------
+set -x
+
+
+# WHMCS directory
+echo "Enter directory for WHMCS (Empty for current working directory): "
+read WHMCS_DIR
+
+
+
+rm_files(){
+
+    rm -vrf "$WHMCS_DIR/includes/aflexi" &&
+    rm -vrf "$WHMCS_DIR/includes/hooks/paidorder.php" &&
+    rm -vrf "$WHMCS_DIR/modules/admin/aflexi_cdn" &&
+    
+    return $?
+}
+
+
+check_error(){
+
+    EXIT_CODE="$?"
+
+    if [ $EXIT_CODE -gt 0 ]; then
+        echo "Aborted! ($EXIT_CODE)"
+        exit $EXIT_CODE
+    fi
+}
+
+main(){
+
+    rm_files
+    
+    check_error
+    
+    exit 0
+}
+
+main

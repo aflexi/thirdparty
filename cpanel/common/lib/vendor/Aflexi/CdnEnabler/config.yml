@@ -1,0 +1,7 @@
+# app
+    app_home: /var/cpanel/aflexi/operator
+
+# log
+    log_handler: file
+    log_storage: app.log
+    log_level: INFO

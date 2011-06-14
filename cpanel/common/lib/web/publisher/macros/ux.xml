@@ -1,0 +1,20 @@
+{% macro dialog_error(errors, text, id) %}
+    {% if errors %}
+        <div id="{{ id|default('dialog-error') }}" class="dialog">
+            {{ text|default('The system could not process your request due to the following error(s)') }}:
+            <ul>
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro dialog_info(text, id) %}
+    {% if text %}
+        <div id="{{ id|default('dialog-info') }}" class="dialog">
+            {{ text }}
+        </div>
+    {% endif %}
+{% endmacro %}
