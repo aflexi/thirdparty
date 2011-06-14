@@ -1,5 +1,18 @@
 <?php
 
+/*
+ * LICENSE AGREEMENT
+ * -----------------------------------------------------------------------------
+ * Copyright (c) 2010 Aflexi Sdn. Bhd.
+ * 
+ * This file is part of Aflexi_Common.
+ * 
+ * Aflexi_Common is published under the terms of the Open Software License 
+ * ("OSL") v. 3.0. For the full copyright and license information, please view 
+ * the LICENSE file that was distributed with this source code.
+ * -----------------------------------------------------------------------------
+ */
+ 
 # namespace Aflexi\CdnEnabler\Cpanel;
 
 /**
@@ -164,24 +177,16 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         return !empty($rt) ? $rt[0] : NULL;
     }
     
-    function getCdnUsers($packages = NULL) {
+    function getCdnUsers() {
         $rt = array();
-        $filter = array('operator' => $this->getOperatorId());
-        if(is_null($packages)){
-            $packages = $this->packageHelper->getPackages(TRUE);
-            if(!empty($packages)){
-                $filter = array_merge($filter, array('bandwidthPackage.name' => array('venture1_crossfit')));
-            }
-        }
         
         $results = $this->xmlRpcClient->execute('publisherLink.get', array(
             $this->config['operator']['auth']['username'],
             $this->config['operator']['auth']['key'],
-            $filter
+            array(
+                'operator' => $this->getOperatorId()
+            )
         ));
-
-        var_dump($results);
-        die;
 
         $results = $results['results'];
         foreach($results as $publisherLink){

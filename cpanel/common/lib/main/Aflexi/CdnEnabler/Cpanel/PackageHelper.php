@@ -312,11 +312,7 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
                 $outCdnPackages[$packageName] = array(
                     'id' => $cdnPackageId,
                     'name' => $packageName,
-                    'type' => 'PUBLISHER_LINK',
-                    'canHaveHttpPull' => (bool) TRUE,
-                    'canHaveHttpPush' => (bool) false,
-                    'canHaveLive' => (bool) false,
-                    'canHaveVod' => (bool) false
+                    'type' => 'PUBLISHER_LINK'
                 );
                 $rt++;
             }
