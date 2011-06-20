@@ -177,18 +177,35 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         return !empty($rt) ? $rt[0] : NULL;
     }
     
-    function getCdnUsers() {
+    function getCdnUsers($packages = NULL) {
         $rt = array();
+        $results = array();
+        $index = 0;
+        $filter = array('operator' => $this->getOperatorId());
         
-        $results = $this->xmlRpcClient->execute('publisherLink.get', array(
-            $this->config['operator']['auth']['username'],
-            $this->config['operator']['auth']['key'],
-            array(
-                'operator' => $this->getOperatorId()
-            )
-        ));
+        if(is_null($packages)){
+            $packages = $this->packageHelper->getPackages(TRUE);
+            if(!empty($packages)){
+               $filter = array_merge($filter, array('bandwidthPackage.name' => array_keys($packages)));
+            }
+        }
 
-        $results = $results['results'];
+        do{
+            $temp = $this->xmlRpcClient->execute('publisherLink.get', array(
+                $this->config['operator']['auth']['username'],
+                $this->config['operator']['auth']['key'],
+                $filter,
+                array(
+                    'firstResultIndex' => $index,
+                    'maximumResults' => 50
+                )
+            ));
+            $index += 50;
+
+
+            $results = array_merge($results, $temp['results']);
+        }while(count($temp['results']) >=50);
+
         foreach($results as $publisherLink){
             // Temporary Hack, until GM set user status based on publisherLink status.
 //            if($publisherLink['status'] != 'DELETED'){
@@ -222,7 +239,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         if(is_null($cdnUsers)){
             $cdnUsers = $this->getCdnUsers();
         }
-        
+
         $cp_publishers = $this->getUsers();
         $hostname = str_replace('-', '_', $this->getCpanelHostname());
 
@@ -237,10 +254,13 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 unset($cp_publishers[$key]);
             }
         }
+
         // Filter out non cPanel user in CDN publishers
         foreach($cdnUsers as $user){
             if(
-                $this->packageHelper->isCdnEnabled($user['bandwidthPackage']['name']) &&
+                // NOTE: This filter is not need anymore since, publisherLink.get already do filter based on the
+                // packagename
+                // $this->packageHelper->isCdnEnabled($user['bandwidthPackage']['name']) &&
                 // This check is needed for operator running cPanel CDN Enabler on multiple machines.
                 strpos($user['username'], $hostname) !== FALSE
             ){
@@ -253,14 +273,13 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                     'cpanel' =>array(
                         'PLAN'=> @$cp_publishers[$user['name']]['PLAN'],
                         'FEATURELIST' => @$cp_publishers[$user['name']]['FEATURELIST'],
-                        'BWLIMIT' => @$cp_publishers[$user['name']]['BWLIMIT']
+                        'BWLIMIT' => @$cp_publishers[$user['name']]['BWLIMIT']  
                 ));
                 if(isset($cp_publishers[$user['name']]['SUSPENDED'])){
                     $cdnCpanelUsers[$user['name']]['cpanel']['SUSPENDED'] = $cp_publishers[$user['name']]['SUSPENDED'];
                 }
             }
         }
-
 
         foreach($cdnCpanelUsers as $key ){
             if(isset($cp_publishers[$key['name']]['SUSPENDED'])){
@@ -544,6 +563,12 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 }
 //            }
         }
+
+        if(self::$logger->isInfoEnabled()){
+            self::$logger->info("{$rt} publisherLinks are created");
+        }
+
+
         
         return $rt;
     }
@@ -624,6 +649,11 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
             $this->deletePublisherLink($cp_publisher['id']);
             $rt++;
         }
+
+        if(self::$logger->isInfoEnabled()){
+            self::$logger->info("{$rt} publisherLinks are deleted");
+        }
+
         return $rt;
     }
 

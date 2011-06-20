@@ -56,19 +56,21 @@
                     break;
                 }
                 case 2:{
-                    $results['users'] = $this->container->getUserHelper()->syncUsers();
-                    $this->container->getUserHelper()->onUserUpgradePackage();
 
+                    $this->container->getUserHelper()->onUserUpgradePackage();
+                    $results['users'] = $this->container->getUserHelper()->syncUsers();
                     $this->container->getUserHelper()->onUserDeleted();
                     break;
                 } 
                 default:{
+
                     $results['packages'] = $this->container->getPackageHelper()->syncPackages();
                     // NOTE [yclian 20100729] Yes, I know afx_xmlrpc_get_packages() 
                     // is being called twice as afx_whm_sync_packages() is calling 
                     // it too.
-                    $results['users'] = $this->container->getUserHelper()->syncUsers();
                     $this->container->getUserHelper()->onUserUpgradePackage();
+                    $results['users'] = $this->container->getUserHelper()->syncUsers();
+
 
                     $this->container->getUserHelper()->onUserDeleted();
                     break;
