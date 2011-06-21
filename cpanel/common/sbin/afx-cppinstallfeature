@@ -15,11 +15,14 @@ if [ -z "$(cat $CPANEL_HOME/whostmgr/features | grep cdn)" ]; then
     echo "cdn:Content Delivery Network" >> $CPANEL_HOME/whostmgr/features
 fi
 
+# FIXME [yasir 20110621] Find the correct get the actual feature of default
+# Comment until found the fix, because it would lead to bug,
+# when  $CPANEL_DATA/features is not synced with actual.
 # Disable CDN in default feature.
-if [ -f $CPANEL_DATA/features/default ]; then
-    if [ -z "$(cat $CPANEL_DATA/features/default | grep cdn=)" ]; then
-        echo "cdn=0" >> $CPANEL_DATA/features/default
-    fi
-else
-    echo "cdn=0" > $CPANEL_DATA/features/default
-fi
+#if [ -f $CPANEL_DATA/features/default ]; then
+#    if [ -z "$(cat $CPANEL_DATA/features/default | grep cdn=)" ]; then
+#        echo "cdn=0" >> $CPANEL_DATA/features/default
+#    fi
+#else
+#    echo "cdn=0" > $CPANEL_DATA/features/default
+#fi
