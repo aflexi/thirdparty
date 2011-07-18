@@ -189,7 +189,8 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                     'publisher' => array(
                         'username' => TRUE,
                         'name' => TRUE,
-                        'email' => TRUE
+                        'email' => TRUE,
+                        'id' => TRUE
                     ),
                     'status' => TRUE,
                     'bandwidthPackage' => TRUE
@@ -251,7 +252,6 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         if(is_null($cdnUsers)){
             $cdnUsers = $this->getCdnUsers();
         }
-
         $cp_publishers = $this->getUsers();
         $hostname = str_replace('-', '_', $this->getCpanelHostname());
 

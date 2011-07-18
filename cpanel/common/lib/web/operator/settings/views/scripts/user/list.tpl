@@ -56,7 +56,7 @@
                                             has been suspended from portal
                                         {% elseif user_type == 'unsynced_suspend' %}
                                             has been suspended from cpanel
-                                        {% elseif user_type == 'unsynced_deleted' %}
+                                        {% elseif user_type == 'unsynced_delete' %}
                                             has been deleted from cpanel
                                         {% else %}
                                             doesn't have CDN access
