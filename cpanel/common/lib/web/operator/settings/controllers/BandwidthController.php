@@ -44,8 +44,8 @@
         $bandwidthUsage = array();
         $userList = array();
 
-        $cpUsers = $this->container->getUserHelper()->getSyncStatuses();
         $cdnUsers = $this->container->getUserHelper()->getCdnUsers();
+        $cpUsers = $this->container->getUserHelper()->getSyncStatuses($cdnUsers);
         $cpPackages = $this->container->getPackageHelper()->getPackages();
         $cdnPackages = $this->container->getPackageHelper()->getCdnPackages();
 

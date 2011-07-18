@@ -177,11 +177,25 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         return !empty($rt) ? $rt[0] : NULL;
     }
     
-    function getCdnUsers($packages = NULL) {
+    function getCdnUsers($packages = NULL, $options = array()) {
         $rt = array();
         $results = array();
-        $index = 0;
         $filter = array('operator' => $this->getOperatorId());
+        $options = array_merge(
+            array(
+                'firstResultIndex' => 0,
+                'maximumResults' => 75,
+                'extract' => array(
+                    'publisher' => array(
+                        'username' => TRUE,
+                        'name' => TRUE,
+                        'email' => TRUE
+                    ),
+                    'status' => TRUE,
+                    'bandwidthPackage' => TRUE
+                )
+            ));
+        
         
         if(is_null($packages)){
             $packages = $this->packageHelper->getPackages(TRUE);
@@ -195,16 +209,14 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 $this->config['operator']['auth']['username'],
                 $this->config['operator']['auth']['key'],
                 $filter,
-                array(
-                    'firstResultIndex' => $index,
-                    'maximumResults' => 50
-                )
+                $options
             ));
-            $index += 50;
+
+            $options['firstResultIndex'] += 75;
 
 
             $results = array_merge($results, $temp['results']);
-        }while(count($temp['results']) >=50);
+        }while(count($temp['results']) >= 75);
 
         foreach($results as $publisherLink){
             // Temporary Hack, until GM set user status based on publisherLink status.
@@ -258,8 +270,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         // Filter out non cPanel user in CDN publishers
         foreach($cdnUsers as $user){
             if(
-                // NOTE: This filter is not need anymore since, publisherLink.get already do filter based on the
-                // packagename
+                // NOTE: This filter is not need anymore since, publisherLink.get already do filter based on the packagename
                 // $this->packageHelper->isCdnEnabled($user['bandwidthPackage']['name']) &&
                 // This check is needed for operator running cPanel CDN Enabler on multiple machines.
                 strpos($user['username'], $hostname) !== FALSE
@@ -319,7 +330,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
             $outCdnUsers = $this->getLocalCdnUsers();
         }
 
-        $cdn_publishers = $this->getCdnUsers();
+        $cdn_publishers = $this->getCdnUsers(NULL);
         $cp_publishers = $this->getSyncStatuses($cdn_publishers);
         $cdn_packages = $this->packageHelper->getCdnPackages();
 
@@ -380,13 +391,10 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         );
 
         $rt['unsynced_deleted'] += $this->deleteCdnPublishers(
-            $cdn_packages,
-            $cp_publishers_target_delete,
-            $outCdnUsers
+            $cp_publishers_target_delete
         );
 
         $rt['unsynced_suspended'] += $this->suspendCdnPublishers(
-            $cdn_packages,
             $cp_publishers_target_suspend
         );
 
@@ -618,12 +626,10 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
     /**
      * Suspend CDN users, when a same user in cPanel is suspended
      *
-     * @param array $cdn_packages
      * @param array $cp_publishers
-     * @param array $cdn_publishers
      * @return int Number of created publishers.
      */
-    protected function suspendCdnPublishers(array $cdn_packages, array $cp_publishers){
+    protected function suspendCdnPublishers( array $cp_publishers){
 
         $rt = 0;
 
@@ -641,7 +647,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         return $rt;
     }
 
-    protected function deleteCdnPublishers(array $cdn_packages, array $cp_publishers){
+    protected function deleteCdnPublishers(array $cp_publishers){
 
         $rt = 0;
 

@@ -134,6 +134,13 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
             $this->config['operator']['auth']['key'],
             array(
                 'user' => $this->config['operator']['auth']['username']
+            ),
+            array(
+                'extract' => array(
+                    'name' => TRUE,
+                    'id' => TRUE,
+                    'bandwidthLimit' => TRUE
+                )
             )
         ));
         $results = $results['results'];

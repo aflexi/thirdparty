@@ -57,7 +57,7 @@
         $afx_operator = $this->container->getUserHelper()->getCdnSelfUser();
         $afx_packages = $this->container->getPackageHelper()->getCdnPackages();
         
-        $cp_packages = $this->container->getPackageHelper()->getSyncStatuses();
+        $cp_packages = $this->container->getPackageHelper()->getSyncStatuses($afx_packages);
         $cp_feature_packages = array(
             'synced' => $this->getFeatureToPackages($cp_packages['synced']),
             'unsynced' => $this->getFeatureToPackages($cp_packages['unsynced']),

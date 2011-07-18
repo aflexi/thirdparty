@@ -32,6 +32,7 @@ if(exists($m->{inputs}->{user_name})){
         my %user;
         my $user_name = $_;
         %user = Cpanel::Config::LoadCpUserFile::load($user_name);
+        $user{'USER'} = $user_name;
         $users{$user_name} = \%user;
     }
     $m->write({
