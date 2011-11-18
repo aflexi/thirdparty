@@ -58,6 +58,7 @@
         $afx_packages = $this->container->getPackageHelper()->getCdnPackages();
         
         $cp_packages = $this->container->getPackageHelper()->getSyncStatuses($afx_packages);
+        
         $cp_feature_packages = array(
             'synced' => $this->getFeatureToPackages($cp_packages['synced']),
             'unsynced' => $this->getFeatureToPackages($cp_packages['unsynced']),
@@ -79,7 +80,8 @@
                         $cp_featurelist,
                         // TODO [yclian 20100723] We have the flexibility here. 
                         // We will support disabling from this form next time.
-                       $_REQUEST['submit']
+                       $_REQUEST['submit'],
+                       FALSE
                     );
                     
                     // We will push to sync if they are in unqualified. This safe-check is needed in case user submits twice - 
@@ -95,7 +97,7 @@
                 // Here we sync. If things broken, just repair manually.
                 $afx_packages_sync_results = $this->container->getPackageHelper()->syncPackages($cp_packages_filter, $afx_packages_synced);
                 // All existing and newly synced packages will have their publishers synced.
-                $afx_users_sync_results = $this->container->getUserHelper()->syncUsers();
+                //$afx_users_sync_results = $this->container->getUserHelper()->syncUsers();
                 // Loop, unset, and set.
                 
                 foreach($this->getRequest()->getParam('feature-lists') as $cp_featurelist){

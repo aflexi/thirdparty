@@ -34,10 +34,11 @@
     function indexAction() {
         $afx_template_context = array();
         $afx_errors = array();
-        
+
         if($this->getRequest()->isPost() && $this->getRequest()->getParam('submit')){
             $results;
             $afx_operator;
+            $globalConfig;
             
             $results = array(
                 'packages' => array(
@@ -50,6 +51,7 @@
                 ),
             );
             
+            
             switch(@$_REQUEST['sync-type']){
                 case 1:{
                     $results['packages'] = $this->container->getPackageHelper()->syncPackages();
@@ -57,7 +59,8 @@
                 }
                 case 2:{
 
-                    $this->container->getUserHelper()->onUserUpgradePackage();
+                    // Enable sharing package and get packageName
+//                    $this->container->getUserHelper()->onUserUpgradePackage();
                     $results['users'] = $this->container->getUserHelper()->syncUsers();
                     $this->container->getUserHelper()->onUserDeleted();
                     break;
@@ -68,7 +71,7 @@
                     // NOTE [yclian 20100729] Yes, I know afx_xmlrpc_get_packages() 
                     // is being called twice as afx_whm_sync_packages() is calling 
                     // it too.
-                    $this->container->getUserHelper()->onUserUpgradePackage();
+//                    $this->container->getUserHelper()->onUserUpgradePackage();
                     $results['users'] = $this->container->getUserHelper()->syncUsers();
 
 
@@ -76,8 +79,10 @@
                     break;
                 }
             }
-            
+
         }
+
+        
         $afx_template_context = array_merge(
             $afx_template_context,
             array(

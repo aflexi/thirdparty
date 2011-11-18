@@ -29,11 +29,17 @@ $packages{'default'} = { 'FEATURELIST' => 'default' };
 # Feature Descriptions, a hash reference.
 # ------------------------------------------------------------------------------
 %feature_descriptions = ();
-foreach(Cpanel::Features::load_feature_descs()){
+
+
+foreach(Cpanel::Features::load_addon_feature_descs()){
     # Each element is an array reference. So we have to de-reference it.
     $feature_descriptions{@$_[0]} = @$_[1];
 }
 
+foreach(Cpanel::Features::load_feature_descs()){
+    # Each element is an array reference. So we have to de-reference it.
+    $feature_descriptions{@$_[0]} = @$_[1];
+}
 # Feature Settings.
 # ------------------------------------------------------------------------------
 # A feature set contains a set of features.

@@ -12,7 +12,7 @@
  * the LICENSE file that was distributed with this source code.
  * -----------------------------------------------------------------------------
  */
- require_once(dirname(__FILE__).'/../../../../vendor/Snoopy/Snoopy.class.php');
+require_once(dirname(__FILE__).'/../../../../vendor/Snoopy/Snoopy.class.php');
 require_once dirname(__FILE__) . '/../../../../vendor/OAuth/OAuthStore.php';
 require_once dirname(__FILE__) . '/../../../../vendor/OAuth/OAuthRequester.php';
 

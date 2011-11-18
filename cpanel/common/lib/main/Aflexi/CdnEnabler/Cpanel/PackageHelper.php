@@ -90,7 +90,6 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
         $rt = array();
         
         if($cdnEnabledOnly){
-            
             foreach ($nativePackages['packages'] as $packageName => $package){
                 if(array_key_exists('FEATURELIST', $package)){
                     $packageFeatureList = $package['FEATURELIST'];
@@ -111,14 +110,19 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
     }
     
     function getCdnPackage($id){
+
+        $filter = array('user' => $this->config['operator']['auth']['username']);
+
+        if(is_numeric($id)){
+            $filter = array_merge(array('id' => (int) $id), $filter);
+        }else{
+            $filter = array_merge(array('name' => $id), $filter);
+        }
         
         $rt = $this->xmlRpcClient->execute('bandwidthPackage.get', array(
             $this->config['operator']['auth']['username'],
             $this->config['operator']['auth']['key'],
-            array(
-                'user' => $this->config['operator']['auth']['username'],
-                'id' => $id
-            )
+            $filter
         ));
         $rt = $rt['results'];
         
@@ -150,16 +154,16 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
         
         return $rt;
     }
-    
+
     /**
      * No effective way so far to handle this.
-     * 
+     *
      * @see api/Aflexi/CdnEnabler/Aflexi_CdnEnabler_PackageHelper::isCdnEnabled()
      */
     function isCdnEnabled($id){
-        
+
         $nativePackage = $this->nativeGetPackage($id);
-        
+
         if($nativePackage){
             if(@$nativePackage['feature_list']['cdn']){
                 return TRUE;
@@ -168,61 +172,91 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
         }
         return NULL;
     }
-    
-    function setCdnEnabled($id, $enabled = TRUE){
-        
-        $nativePackage = $this->nativeGetPackage($id);
-        $featureId = $nativePackage['package']['FEATURELIST'];
-        
+
+    function setCdnEnabled($id, $enabled = TRUE, $byPackage = TRUE){
+
+
+        if($byPackage){
+            $nativePackage = $this->nativeGetPackage($id);
+            $id = $nativePackage['package']['FEATURELIST'];
+        }
+
         $this->nativeUpdateFeatureList(
-            $featureId, 
+            $id,
             array(
                 'cdn' => $enabled ? 1 : 0
-            ), 
+            ),
             TRUE
         );
+
     }
-    
+
+    function setCdnEnabledAllFeatures($enabled = TRUE){
+
+        $features = $this->nativeGetFeatures();
+
+        foreach($features['result'] as $featureId){
+            if(!in_array($featureId, array('disabled'))){
+                $this->nativeUpdateFeatureList(
+                    $featureId,
+                    array(
+                        'cdn' => $enabled ? 1 : 0
+                    ),
+                    TRUE
+                );
+            }
+
+        }
+
+
+    }
+
     function getSyncStatuses($cdnPackages = NULL){
-        
+
         $rt = array(
             'synced' => array(),
             'unsynced' => array(),
             'unqualified' => array()
         );
-        
+
         if(is_null($cdnPackages)){
             $cdnPackages = $this->getCdnPackages();
         }
-        
+
         $nPackages = $this->nativeGetPackages();
         foreach($nPackages['packages'] as $packageName => $package){
-            
+
             $feature = $nPackages['feature_lists'][
                 $package['FEATURELIST']
             ];
-            
+
             if(@$feature['cdn']){
                 if(array_key_exists($packageName, $cdnPackages)){
                     $rt['synced'] []= $packageName;
                 } else{
                     $rt['unsynced'] []= $packageName;
                 }
-                
+
             } else{
                 $rt['unqualified'] []= $packageName;
             }
         }
-        
+
         return $rt;
     }
-    
+
     function syncPackages($filters = NULL, &$outCdnPackages = NULL){
-        
+
+        if($this->userHelper->getSharingPackage()){
+            // NOTE [yasir 20110907] If sharing package is set, then all Feature must be CDN enabled.
+            $this->setCdnEnabledAllFeatures(TRUE);
+        }
+
+
         if(is_null($outCdnPackages)){
             $outCdnPackages = $this->getLocalCdnPackages();
         }
-        
+
         /*
          * Used only if logging INFO is on.
          */
@@ -237,11 +271,11 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
             // This update is not updating the remote but local.
             'updated' => array()
         );
-        
+
         $cdnPackages = $this->getCdnPackages();
         $statuses = $this->getSyncStatuses($cdnPackages);
         $packages = $this->getPackages();
-        
+
         if(!is_null($filters)){
             $queueCreate = array_intersect($statuses['unsynced'], $filters);
             $queueUpdate = array_intersect($statuses['synced'], $filters);
@@ -250,35 +284,35 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
             $queueCreate = $statuses['unsynced'];
             $queueUpdate = $statuses['synced'];
         }
-        
+
         if(self::$logger->isInfoEnabled()){
-            
+
             $numQueueCreate = sizeof($queueCreate);
             $numQueueUpdate = sizeof($queueUpdate);
-            
+
             self::$logger->info("Creating $numQueueCreate packages and updating $numQueueUpdate existing local packages..");
             $startTime = microtime(TRUE);
         }
-        
+
         $rt['created'] = $this->syncPackagesCdnCreate($queueCreate, $outCdnPackages, $packages);
         $rt['updated'] = $this->syncPackagesCdnUpdate($queueUpdate, $outCdnPackages, $cdnPackages);
-        
+
         $this->syncPackagesDb($outCdnPackages);
-        
+
         if(self::$logger->isInfoEnabled()){
             $elapsed = round((microtime(TRUE) - $startTime) * 1000, 4);
             self::$logger->info("Synchronization completed within {$elapsed}ms");
         }
-        
+
         return $rt;
     }
 
     function onPackageCreated($package){}
-    
+
     function onPackageUpdated($package1, $package2){}
-    
+
     function onPackageDeleted($package1){}
-    
+
     protected function getLocalCdnPackages(){
         if(file_exists($this->ymlPackages)){
             return Aflexi_Common_Yaml_Utils::read($this->ymlPackages);
@@ -286,7 +320,7 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
             return array();
         }
     }
-    
+
     /**
      * @param array $filters
      * @param array $outCdnPackages
@@ -294,15 +328,15 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
      * @return int
      */
     protected function syncPackagesCdnCreate($filters, &$outCdnPackages, $localPackages){
-        
+
         $rt = 0;
-        
+
         if(self::$logger->isDebugEnabled()){
             self::$logger->debug('Creating CDN packages: '.var_export($filters, TRUE));
         }
-            
+
         foreach($localPackages as $packageName => $package){
-            
+
             if(
                 // Only if packageName is in filters
                 in_array($packageName, $filters) &&
@@ -312,9 +346,9 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
                 // We are not using helper.request here because it's a bad idea
                 // to send multiple writing calls as one.
                 $cdnPackageId = $this->remoteCreatePackage($packageName, $package);
-                // NOTE [yclian 20100927] Not reading other properties such as 
+                // NOTE [yclian 20100927] Not reading other properties such as
                 // bandwidth as defaults are used and users may change.
-                // Services like bandwidth limit shall pull the latest from 
+                // Services like bandwidth limit shall pull the latest from
                 // remote before using the data.
                 $outCdnPackages[$packageName] = array(
                     'id' => $cdnPackageId,
@@ -328,22 +362,22 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
                 $rt++;
             }
         }
-        
-    
+
+
         if(self::$logger->isDebugEnabled()){
             self::$logger->debug("Created $rt CDN packages");
         }
-        
+
         return $rt;
     }
-    
+
     /**
      * @param string $packageName
      * @param array $package Local package
      * @return int CDN package ID.
      */
-    protected function remoteCreatePackage($packageName, $package){
-        
+    protected function remoteCreatePackage($packageName, $package = NULL){
+
         return $this->xmlRpcClient->execute('bandwidthPackage.create', array(
             $this->config['operator']['auth']['username'],
             $this->config['operator']['auth']['key'],
@@ -367,17 +401,17 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
             )
         ));
     }
-    
+
     protected function syncPackagesCdnUpdate($filters, &$outCdnPackages, $remotePackages){
-        
+
         $rt = 0;
-    
+
         if(self::$logger->isDebugEnabled()){
             self::$logger->debug('Updating local CDN packages: '.var_export($filters, TRUE));
         }
-        
+
         foreach($remotePackages as $remotePackageName => $remotePackage){
-            
+
             if(in_array($remotePackageName, $filters)){
                 $outCdnPackages[$remotePackageName] = array_intersect_key($remotePackage, array_flip(array(
                     'id',
@@ -387,58 +421,60 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
                     'dedicatedBandwidth'
                 )));
             }
-            
+
             $rt++;
         }
-    
+
         if(self::$logger->isDebugEnabled()){
             self::$logger->debug("Updated $rt local CDN packages");
         }
-        
+
         return $rt;
     }
-    
+
     protected function syncPackagesDb($outCdnPackages){
         Aflexi_Common_Yaml_Utils::write($this->ymlPackages, $outCdnPackages);
     }
-    
-    /*
-     * Native
-     * -------------------------------------------------------------------------
-     */
-    
+
     /**
      * @return array an associative array with keys: 'packages', 'feature_descriptions', 'feature_sets'.
      */
     protected function nativeGetPackages(){
         return Aflexi_CdnEnabler_Cpanel_PerlUtils::execScript('package_list.pl');
     }
-    
+
+    /**
+     * @return array an associative array with keys: 'feature', 'feature'.
+     */
+    protected function nativeGetFeatures(){
+        return Aflexi_CdnEnabler_Cpanel_PerlUtils::execScript('features_list.pl');
+    }
+
     /**
      * @param string $id Package name
      * @return array An associative array consists of 'package' and 'feature'.
      */
     protected function nativeGetPackage($id){
-        
+
         $rt = NULL;
         $nativePackages = $this->nativeGetPackages();
-        
+
         // If package of ID exists
         if(array_key_exists($id, $nativePackages['packages'])){
-            
+
             $rt = array();
             $rt['package'] = $nativePackages['packages'][$id];
-            
+
             if(array_key_exists($rt['package']['FEATURELIST'], $nativePackages['feature_lists'])){
                 $rt['feature_list'] = $nativePackages['feature_lists'][
                     $rt['package']['FEATURELIST']
                 ];
             }
         }
-        
+
         return $rt;
     }
-    
+
     protected function nativeUpdateFeatureList($id, $changes, $useMerge){
         Aflexi_CdnEnabler_Cpanel_PerlUtils::execScript(
             'featurelist_update.pl',
@@ -463,6 +499,30 @@ class Aflexi_CdnEnabler_Cpanel_PackageHelper implements Aflexi_Common_Object_Ini
     	$cachedPackages = $this->getLocalCdnPackages();
     	$nativeDeletedPackages = array_diff_assoc($nativePackages['packages'], $cachedPackages);
     	return $nativeDeletedPackages;
+    }
+
+    /**
+     * Get the package name with standard suffix.
+     * It will be {hostname}_cpanel_package.
+     *
+     * @author yasir
+     * @return string|boolean
+     */
+    function getSharingPackageName($enable = FALSE){
+
+        if($enable){
+
+            $packageName = $this->userHelper->getCpanelHostname().'_cpanel_package';
+
+            if(!$this->getCdnPackage($packageName)){
+                // If not found, create one.
+                $this->remoteCreatePackage($packageName);
+            }
+
+            return $packageName;
+        }
+
+        return FALSE;
     }
 }
 

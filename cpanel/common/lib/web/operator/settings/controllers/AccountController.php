@@ -43,6 +43,7 @@ class Settings_AccountController extends Zend_Controller_Action{
             $post_whm_host = $this->getRequest()->getParam('whm_host');
             $post_cpanel_host = $this->getRequest()->getParam('cpanel_host');
             $post_cpanel_cname = $this->getRequest()->getParam('cpanel_cname');
+            $post_shared_package = $this->getRequest()->getParam('shared_package');
 
             // [yasir 20110313] The values should not be reset.
             $afx_template_context['params']['username'] = $post_username;
@@ -50,6 +51,7 @@ class Settings_AccountController extends Zend_Controller_Action{
             $afx_template_context['params']['whm_host'] = $post_whm_host;
             $afx_template_context['params']['cpanel_host'] = $post_cpanel_host;
             $afx_template_context['params']['cname'][$post_cpanel_cname] = "checked";
+            $afx_template_context['params']['package'] = !empty($post_shared_package) ? 'checked' : 'unchecked';
 
             if(empty($post_username) || empty($post_auth_key) || empty($post_whm_host) ||  empty($post_cpanel_host) || empty($post_cpanel_cname)){
                 $afx_errors []= 'There are missing values in required field(s).';
@@ -85,6 +87,7 @@ class Settings_AccountController extends Zend_Controller_Action{
                     $globalConfig = $this->config['global'];
                     $globalConfig['integration']['url']['whm'] = $post_whm_host;
                     $globalConfig['integration']['url']['cpanel'] = $post_cpanel_host;
+                    $globalConfig['integration']['shared_package'] = $this->container->getPackageHelper()->getSharingPackageName($post_shared_package);
 
                     //Update Cpanel CNAME
                     $globalConfig['integration']['cname']['auto_cname'] = $post_cpanel_cname;
@@ -131,6 +134,8 @@ class Settings_AccountController extends Zend_Controller_Action{
 
             $afx_template_context['params']['whm_host'] = @$this->config['global']['integration']['url']['whm'] ? $this->config['global']['integration']['url']['whm'] : "{$serverHost}:2086/";
             $afx_template_context['params']['cpanel_host'] = @$this->config['global']['integration']['url']['cpanel'] ? $this->config['global']['integration']['url']['cpanel'] : "{$serverHost}:2082/";
+            $afx_template_context['params']['package'] = $this->isSharingPackageChecked();
+            
             $cpanel_auto_cname = @$this->config['global']['integration']['cname']['auto_cname'];
             
             if(empty($cpanel_auto_cname)){
@@ -151,6 +156,15 @@ class Settings_AccountController extends Zend_Controller_Action{
         );
         $this->view->assign($afx_template_context);
     }
+
+    private function isSharingPackageChecked(){
+
+        if($this->container->getUserHelper()->getSharingPackage()){
+            return 'checked';
+        }
+
+         return 'unchecked';
+     }
 }
 
 ?>

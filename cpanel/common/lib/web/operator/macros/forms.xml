@@ -33,7 +33,7 @@
                 <option value="{{ key }}" {% if key == options.value %} selected="selected"{% endif %}>{{ value }}</option>
             {% endfor %}
         </select>
-    {% elseif type == 'radio' %}
+    {% elseif type == 'radio' or type == 'checkbox' %}
         <input type="{{ type }}" id="{{ id }}" name="{{ id }}" value="{{ options.value }}" {% if options.checked  == "checked" %} checked = "checked" {% endif %}/>
     {% endif %}
 {% endmacro %}

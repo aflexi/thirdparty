@@ -35,11 +35,11 @@
         //Forwarding to list
         $this->_forward('list');
     }
+
     function listAction() {
         $cp_user_helper;
         $cp_package_helper;
         $afx_template_context = array();
-         
         $cp_packages;
         $cp_users;
         /** 
@@ -54,6 +54,7 @@
         
         $afx_users = $this->container->getUserHelper()->getCdnUsers();
         $cp_users = $this->container->getUserHelper()->getSyncStatuses($afx_users);
+        $afx_template_context['params']['package'] = $this->isSharingPackageChecked();
         
         ksort($cp_users['synced']);
         ksort($cp_users['unsynced_unsuspend']);
@@ -72,5 +73,14 @@
         );
         $this->view->assign($afx_template_context);
     }
+
+     private function isSharingPackageChecked(){
+
+        if($packageName = $this->container->getUserHelper()->getSharingPackage()){
+            return $packageName;
+        }
+
+         return NULL;
+     }
 }
 ?>

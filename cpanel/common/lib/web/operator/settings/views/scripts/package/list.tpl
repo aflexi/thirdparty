@@ -52,7 +52,7 @@
                             <ol class="field-rows-columns cp-feature-{{ feature_package_type }}">
                                 <li>
                                    {% if feature_package_type == 'unqualified' %}
-                                       <input type="checkbox" name="feature-lists[]" value="{{ feature_name|url_encode }}"/>
+                                       <input type="checkbox" name="feature-lists[]" value="{{ feature_name }}"/>
                                    {% else %}
                                         <!--
                                             NOTE [yclian 20100721]

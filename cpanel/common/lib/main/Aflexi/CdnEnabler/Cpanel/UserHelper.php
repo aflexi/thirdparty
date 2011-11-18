@@ -119,7 +119,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         $this->packageHelper->setXmlRpcClient($this->xmlRpcClient);
     }
     
-     function setOAuthHelper(Aflexi_CdnEnabler_Cpanel_OAuthHelper $oauthHelper = NULL) {
+    function setOAuthHelper(Aflexi_CdnEnabler_Cpanel_OAuthHelper $oauthHelper = NULL) {
          if (is_null($oauthHelper)) {
             $oauthHelper = new Aflexi_CdnEnabler_Cpanel_OAuthHelper();
             $oauthHelper->setConfig($this->config);
@@ -201,7 +201,12 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         if(is_null($packages)){
             $packages = $this->packageHelper->getPackages(TRUE);
             if(!empty($packages)){
-               $filter = array_merge($filter, array('bandwidthPackage.name' => array_keys($packages)));
+                $packages = array_keys($packages);
+                 if($sharingPackage = $this->getSharingPackage()){
+                     array_push($packages, $sharingPackage);
+                 }
+
+               $filter = array_merge($filter, array('bandwidthPackage.name' => $packages));
             }
         }
 
@@ -252,17 +257,23 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         if(is_null($cdnUsers)){
             $cdnUsers = $this->getCdnUsers();
         }
+
+        // Read the config file, either using userPackage or not.
+        // $this->isSharingPackage(),
+
         $cp_publishers = $this->getUsers();
         $hostname = str_replace('-', '_', $this->getCpanelHostname());
 
+        // packageName get sharing package.
+        $sharingPackage = $this->getSharingPackage();
 
-        // [yasir 20110318] find how to run array_filter, with passing $this
-        // This is realy bad, foreach() really bad, need to replace with something else,
-        // TODO: The strip of property could be done beter may be using RPCX
-        
         // Filter out non CDN cp_publishers,
-        foreach($cp_publishers as $key => $cp_user){
+        foreach($cp_publishers as $key => &$cp_user){
             if(!$this->packageHelper->isCdnEnabled($cp_publishers[$key]['PLAN'])){
+                if($sharingPackage){
+                    $cp_user['PLAN'] = $sharingPackage;
+                    continue;
+                }
                 unset($cp_publishers[$key]);
             }
         }
@@ -280,11 +291,11 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                     'email' => $user['email'],
                     'name' => $user['name'],
                     'publisherLinkStatus' => $user['publisherLinkStatus'],
-                    'id' => $user['id'],
+                    'id' => @$user['id'],
                     'cpanel' =>array(
-                        'PLAN'=> @$cp_publishers[$user['name']]['PLAN'],
+                        'PLAN'=>  @$cp_publishers[$user['name']]['PLAN'],
                         'FEATURELIST' => @$cp_publishers[$user['name']]['FEATURELIST'],
-                        'BWLIMIT' => @$cp_publishers[$user['name']]['BWLIMIT']  
+                        'BWLIMIT' => @$cp_publishers[$user['name']]['BWLIMIT']
                 ));
                 if(isset($cp_publishers[$user['name']]['SUSPENDED'])){
                     $cdnCpanelUsers[$user['name']]['cpanel']['SUSPENDED'] = $cp_publishers[$user['name']]['SUSPENDED'];
@@ -300,9 +311,9 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
             }elseif(array_key_exists($key['name'], $cp_publishers) && @$key['publisherLinkStatus'] == 'ACTIVE'){
                 $rt['synced'][$key['name']] =$key;
             }
-//            else{
-//                $rt['unqualified'][$key['name']] = $key;
-//            }
+            else{
+                $rt['unqualified'][$key['name']] = $key;
+            }
         }
         $rt['unsynced_create'] = array_diff_assoc($cp_publishers, $cdnCpanelUsers);
         $rt['unsynced_delete'] = array_diff_assoc($cdnCpanelUsers, $cp_publishers);
@@ -399,10 +410,14 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         );
 
         $this->writeLocalPublishers($this->configUsersPath, $outCdnUsers);
+
+//        if($this->getSharingPackage()){
+//            $this->setAllCdnEnabled($outCdnUsers);
+//        }
+
+
         return $rt;
     }
-    
-
     
     function updatePublisherPackage($publisherLinkId, $packageId) {
         list($publisherId, $operatorId) = explode(',', $publisherLinkId);
@@ -461,13 +476,13 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
     function onUserDeleted($user1 = null) {
 
     }
+
     function onUserUpdated($user1, $user2) {
     }
 
     function onUserXgraded($user, $package1, $package2) {
     }
 
-    
     protected function filterPublishers(array $cdn_packages, array &$cp_publishers){
         foreach($cp_publishers as $cp_publisher_name => $cp_publisher){
             
@@ -552,7 +567,16 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
     protected function createCdnPublishers(array $cdn_packages, array $cp_publishers, array &$cdn_publishers = array()){
 
         $rt = 0;
+
+        $package_id = NULL;
         
+//        if($sharingPackage = $this->getSharingPackage()){
+//            $package_id = $cdn_packages[$sharingPackage]['id'];
+//        }
+
+
+        // assinged packageId wl
+
         foreach($cp_publishers as $cp_publisher_name => $cp_publisher){
                 // NOTE: [yasir 20110225] another checking in publishers.yml is not needed, and it could rise a problem
                 // when a user that has been sycned and created from cpanel, then it deletes from portal
@@ -565,8 +589,11 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 // NOTE [yclian 20100728] This fixes the possibility of publisher-
                 // package has not been created yet in Aflexi but we are forcing 
                 // a user-sync.
-                if(array_key_exists($cp_publisher['PLAN'], $cdn_packages)){
-                    $cdn_publishers[$cp_publisher_name] = $this->createCdnPublisher($cp_publisher, $cdn_packages[$cp_publisher['PLAN']]);
+            
+                if(
+                    array_key_exists($cp_publisher['PLAN'], $cdn_packages) 
+                ){
+                    $cdn_publishers[$cp_publisher_name] = $this->createCdnPublisher($cp_publisher, $cdn_packages[$cp_publisher['PLAN']], $package_id);
                     $rt++;
                 }
 //            }
@@ -601,7 +628,9 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 // NOTE [yclian 20100728] This fixes the possibility of publisher-
                 // package has not been created yet in Aflexi but we are forcing
                 // a user-sync.
-                if(array_key_exists($cp_publisher['cpanel']['PLAN'], $cdn_packages)){
+                if(
+                    array_key_exists($cp_publisher['cpanel']['PLAN'], $cdn_packages)
+                ){
                     $cp_publisher['secret'] = substr(md5(rand().time().$cp_publisher['username']), 24, 8);
 
                     // NOTE [yasir 20110320] Check how to reset or set a password
@@ -614,7 +643,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                             'password' => $cp_publisher['secret']
                         )
                     );
-                     $cdn_publishers[$cp_publisher_name] = $this->createPublisherEntry($cp_publisher, $cdn_packages);
+                     $cdn_publishers[$cp_publisher_name] = $this->createPublisherEntry($cp_publisher, $cdn_packages[$cp_publisher['cpanel']['PLAN']]);
                      $rt++;
                 }
 //            }
@@ -671,11 +700,19 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
      * @return array
      */
     protected function createCdnPublisher(array $cp_publisher, array $cdn_package){
-        
+
+
         $rt = array();
         $cdn_publisher_id = NULL;
         $cdn_publisher_password = NULL;
+//
+//        if(!$packageId){
+//            $packageId = $cdn_package['id'];
+//        }
+
         $cp_publisher['CDN_USERNAME'] = "{$this->getNormalizeUsername($cp_publisher['USER'])}/{$this->getOperatorId()}";
+        $cp_publisher['CONTACTEMAIL'] = $this->getCpanelEmail($cp_publisher);
+
         $cdn_publisher_password = substr(md5(rand().time().$cp_publisher['USER']), 24, 8);
         $cdn_publisher_id = $this->createCdnUser(
             $cp_publisher['CONTACTEMAIL'],
@@ -699,6 +736,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 'id' => $cdn_package['id'],
                 'name' => $cdn_package['name']
             )
+            //'shared_package' => @$cp_publisher['SHARED_PLAN']
         );
         
         return $rt;
@@ -712,8 +750,11 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
      * @return void
      */
     protected function createPublisherEntry(array $publisher, $cdn_package){
-
-
+//
+//        if(empty($cdn_package)){
+//            $cdn_package['name'] = @$publisher['cpanel']['PLAN'];
+//        }
+        
         if(!empty($publisher) && !empty($cdn_package)){
 
             $cdn_oauth = $this->registerOAuth($publisher['username']);
@@ -726,9 +767,11 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 'oauth_key' => $cdn_oauth->consumer_key,
                 'oauth_secret' => $cdn_oauth->consumer_secret,
                 'package' => array(
-                    'id' => $cdn_package['id'],
-                    'name' => $cdn_package['name']
+                    'id' => @$cdn_package['id'],
+                    'name' => @$cdn_package['name']
                 )
+
+            //'shared_package' => @$publisher['SHARED_PLAN']
 
             );
             return $rt;
@@ -899,7 +942,8 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 'oauth_key',
                 'oauth_secret',
                 'package',
-                'status'
+                'status',
+                'shared_package'
             )));
         }
         // Write the publishers.yml.
@@ -960,7 +1004,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
      * @author yasir
      * @return void
      */
-    protected function getCpanelHostname(){
+    function getCpanelHostname(){
         $rt = Aflexi_CdnEnabler_Cpanel_PerlUtils::execScript(
             "host_get.pl"
         );
@@ -972,7 +1016,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
      * @param  string $name
      * @return array
      */
-   protected function nativeGetUser($name) {
+           protected function nativeGetUser($name) {
 
         $rt = Aflexi_CdnEnabler_Cpanel_PerlUtils::execScript(
             "user_get.pl",
@@ -994,6 +1038,35 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
             "user_get.pl"
         );
         return $rt['users'];
+    }
+
+    /***
+     * Get sharingPackage
+     * @return Aflexi_CdnEnabler_Cpanel_Config|null
+     */
+    function getSharingPackage(){
+        return !empty($this->config['global']['integration']['shared_package']) ? $this->config['global']['integration']['shared_package'] : NULL;
+    }
+
+    function getCpanelEmail($user){
+
+        if(!$user){
+            return FALSE;
+        }
+
+        if(is_string($user)){
+            $user = $this->getUser($user);
+        }
+
+        if(!empty($user['CONTACTEMAIL'])){
+            return $user['CONTACTEMAIL'];
+        }
+
+        if(!empty($user['DOMAIN'])){
+            return 'admin@'.$user['DOMAIN'];
+        }
+
+        return 'admin@'.$this->getCpanelHostname();
     }
 }
 

@@ -17,21 +17,23 @@
 {% block content %}
 
     {% if  users.unsynced_create|length + users.unsynced_unsuspend|length > 0 %}
-    <div id="dialog-error" class="dialog">
-        <form id="afx-form-syncnow" action="/aflexi/index.php?module=settings&controller=sync" method="post">
-               <button type="submit" name="submit" value="1">Sync now!</button>
-                <input type=hidden name="sync-type" value="2"/>
-               <span>
-                   We have detected that you have <strong>{{users.unsynced_create|length + users.unsynced_unsuspend|length  }}  unsynchronized
-                   cPanel users</strong> with Aflexi CDN. CDN operations may be affected if these users 
-                   are not created or updated in Aflexi.
-               </span>
-        </form>
-    </div>
+        <div id="dialog-error" class="dialog">
+            <form id="afx-form-syncnow" action="/aflexi/index.php?module=settings&controller=sync" method="post">
+                   <button type="submit" name="submit" value="1">Sync now!</button>
+                    <input type=hidden name="sync-type" value="2"/>
+                   <span>
+                       We have detected that you have <strong>{{users.unsynced_create|length + users.unsynced_unsuspend|length  }}  unsynchronized
+                       cPanel users</strong> with Aflexi CDN. CDN operations may be affected if these users
+                       are not created or updated in Aflexi.
+                   </span>
+                    <br/>
+            </form>
+        </div>
     {% endif %}
-    
+
     <p>The list below shows users with CDN access. In order to grant them access, please <a href="/aflexi/index.php?module=settings&controller=package">manage the features and packages via this page</a>.</p>
 
+   {% if params.package %}<span>You have enabled sharing package, with <b>{{params.package}}</b>. Click <a href="/aflexi/index.php?module=settings&controller=account">here</a> to re-configure it.<span> {% endif %}
     <form id="afx-form-userlist" action="{{ form_action }}" method="get">
         <fieldset>
             <ol class="field field-rows">
@@ -63,13 +65,16 @@
                                         {% endif %}
                                     </span>
                                 </li>
-                                <li>
-                                    <span>
-                                        {{ package_name }}
-                                        @
-                                        <a href="/scripts2/dofeaturemanager?action=editfeature&feature={{ feature_name|url_encode }}">{{ feature_name }}</a>
-                                    </span>
-                                </li>
+                                {% if not params.package %}
+                                    <li>
+
+                                        <span>
+                                            {{ package_name }}
+                                            @
+                                            <a href="/scripts2/dofeaturemanager?action=editfeature&feature={{ feature_name|url_encode }}">{{ feature_name }}</a>
+                                        </span>
+                                    </li>
+                                {% endif %}
                             </ol>
                         </li>
                         {#

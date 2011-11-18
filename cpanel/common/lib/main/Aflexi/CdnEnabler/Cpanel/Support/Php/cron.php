@@ -52,7 +52,7 @@ class Aflexi_CdnEnabler_Cpanel_Support_Php_Cron {
     protected function syncUsers() {
         $this->container->getUserHelper()->syncUsers();
 
-        $this->container->getUserHelper()->onUserUpgradePackage();
+//        $this->container->getUserHelper()->onUserUpgradePackage();
 
         $this->container->getUserHelper()->onUserDeleted();
     }

@@ -34,9 +34,11 @@ class ResourceController extends Zend_Controller_Action{
         $this->config = $this->container->getConfig();
         $this->initializeStatic();
     }
+
     function initializeStatic(){
         self::$logger = Aflexi_Common_Log_LoggerFactory::getLogger(__CLASS__);
     }
+
     function createcallbackAction() {
         $afx_template_context = array();
         

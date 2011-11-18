@@ -50,6 +50,13 @@
                 {% endset %}
                 {{ forms.row(id, 'cPanel URL', input, true, tip) }}
 
+                {% set id = 'shared_package' %}
+                {% set tip = 'Enable to allow all users to have CDN accounts automatically regardless WHM feature list.' %}
+                {% set input %}
+                    {{ forms.input(id, 'checkbox', ['value': 'enabled', 'checked': params.package], tip) }}
+                {% endset %}
+                {{ forms.row(id, 'Synchronize All Users', input, true, tip) }}
+
             </ol>
         </fieldset>
         <fieldset>
