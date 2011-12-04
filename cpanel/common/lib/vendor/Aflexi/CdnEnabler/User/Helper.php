@@ -15,9 +15,9 @@ interface Aflexi_CdnEnabler_User_Helper{
      */
     
     /**
-     * Get user of given name.
-     * 
-     * @param $id
+     * Get user of parameter.
+     *
+     * @param mixed $id
      * @return mixed The native package object.
      */
     function getUser($name);
@@ -49,10 +49,11 @@ interface Aflexi_CdnEnabler_User_Helper{
      */
     
     /**
-     * @param mixed $id
+     * @param $filter
+     * @param $option
      * @return array An associative array representing CDN user.
      */
-    function getCdnUser($name);
+    function getCdnUser($filters = NULL, $options = NULL);
     
     /**
      * @param mixed $id
@@ -86,6 +87,14 @@ interface Aflexi_CdnEnabler_User_Helper{
      * @return array array('created'  => $created_count, 'updated' => $updated_count))
      */
     function syncUsers($filters = NULL, &$outCdnUsers = NULL);
+
+    /**
+     * Get user email if not resolve it, used
+     *
+     * @param  $user
+     * @return void
+     */
+    function getCpanelEmail($user);
 }
 
 ?>
