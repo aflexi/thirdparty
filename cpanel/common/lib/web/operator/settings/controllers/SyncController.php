@@ -1,3 +1,4 @@
+
 <?php
 
 /*
@@ -60,7 +61,7 @@
                 case 2:{
 
                     // Enable sharing package and get packageName
-//                    $this->container->getUserHelper()->onUserUpgradePackage();
+                    $this->container->getUserHelper()->onUserUpgradePackage();
                     $results['users'] = $this->container->getUserHelper()->syncUsers();
                     $this->container->getUserHelper()->onUserDeleted();
                     break;
@@ -71,7 +72,7 @@
                     // NOTE [yclian 20100729] Yes, I know afx_xmlrpc_get_packages() 
                     // is being called twice as afx_whm_sync_packages() is calling 
                     // it too.
-//                    $this->container->getUserHelper()->onUserUpgradePackage();
+                    $this->container->getUserHelper()->onUserUpgradePackage();
                     $results['users'] = $this->container->getUserHelper()->syncUsers();
 
 

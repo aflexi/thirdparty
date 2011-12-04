@@ -143,13 +143,20 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         return $this->nativeGetUsers();
     }
     
-    function getCdnUser($id){
+    function getCdnUser($filters = NULL, $options = NULL){
+        if(is_null($filters)){
+            $filters = array('_hack' => TRUE);
+        }
+        
+        if(is_null($options)){
+            $options = array('_hack' => TRUE);
+        }
+        
         $rt = $this->xmlRpcClient->execute('user.get', array(
             $this->config['operator']['auth']['username'],
             $this->config['operator']['auth']['key'],
-            array(
-                'id' => $id
-            )
+            $filters,
+            $options
         ));
         $rt = $rt['results'];
         
@@ -206,7 +213,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                      array_push($packages, $sharingPackage);
                  }
 
-               $filter = array_merge($filter, array('bandwidthPackage.name' => $packages));
+                 $filter = array_merge($filter, array('bandwidthPackage.name' => $packages));
             }
         }
 
@@ -224,7 +231,13 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
             $results = array_merge($results, $temp['results']);
         }while(count($temp['results']) >= 75);
 
+        $hostname = str_replace('-', '_', $this->getCpanelHostname());
+
         foreach($results as $publisherLink){
+            if(
+                // This check is needed for operator running cPanel CDN Enabler on multiple machines.
+                strpos($publisherLink['publisher']['username'], $hostname) !== FALSE
+            ){
             // Temporary Hack, until GM set user status based on publisherLink status.
 //            if($publisherLink['status'] != 'DELETED'){
                 // This is as well
@@ -232,6 +245,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 $publisherLink['publisher']['bandwidthPackage'] = $publisherLink['bandwidthPackage'];
                 $rt[$publisherLink['publisher']['name']] = $publisherLink['publisher'];
 //            }
+            }
         }
         
         return $rt;
@@ -280,12 +294,14 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
 
         // Filter out non cPanel user in CDN publishers
         foreach($cdnUsers as $user){
+            /* NOTE: This condition is done in getCdnUsers()
             if(
                 // NOTE: This filter is not need anymore since, publisherLink.get already do filter based on the packagename
                 // $this->packageHelper->isCdnEnabled($user['bandwidthPackage']['name']) &&
                 // This check is needed for operator running cPanel CDN Enabler on multiple machines.
                 strpos($user['username'], $hostname) !== FALSE
             ){
+             */
                 $cdnCpanelUsers[$user['name']] = array(
                     'username' => $user['username'],
                     'email' => $user['email'],
@@ -300,7 +316,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
                 if(isset($cp_publishers[$user['name']]['SUSPENDED'])){
                     $cdnCpanelUsers[$user['name']]['cpanel']['SUSPENDED'] = $cp_publishers[$user['name']]['SUSPENDED'];
                 }
-            }
+//            }
         }
 
         foreach($cdnCpanelUsers as $key ){
@@ -439,25 +455,27 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
     }
     
     function onUserUpgradePackage() {
-            //Find out if user has made changes to package
+        //Find out if user has made changes to package
         $cpUsers = $this->getUsers(TRUE);
         $cdnUsers = $this->getCdnUsers();
         $cdnPackages = $this->packageHelper->getCdnPackages();
-        
+        $package = $this->getSharingPackage();
+
         foreach ($cpUsers as $userName=>$cpUser) {
             if (
                 (isset($cdnUsers[$userName])) &&
-                ($cpUser['PLAN'] != $cdnUsers[$userName]['bandwidthPackage']['name'])
+                ($cpUser['PLAN'] != $cdnUsers[$userName]['bandwidthPackage']['name']) &&
+                ($package != $cdnUsers[$userName]['bandwidthPackage']['name'])
             ) {
-                if ($this->isCdnEnabled($userName) && isset($cdnPackages[$cpUser['PLAN']])) {
-                    $this->updatePublisherPackage(
+                if(($this->isCdnEnabled($userName) && isset($cdnPackages[$cpUser['PLAN']]))) {
+                    return $this->updatePublisherPackage(
                         $cdnUsers[$userName]['id'] . ',' . $this->getOperatorId(),
                         $cdnPackages[$cpUser['PLAN']]['id']
                     );
                 }
                 else {
                     //Suspend user
-                    $this->updatePublisherLink(
+                    return $this->updatePublisherLink(
                         $cdnUsers[$userName]['id'],
                         array(
                             'publisher' => array('id' => (int) $cdnUsers[$userName]['id']),
@@ -714,13 +732,26 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         $cp_publisher['CONTACTEMAIL'] = $this->getCpanelEmail($cp_publisher);
 
         $cdn_publisher_password = substr(md5(rand().time().$cp_publisher['USER']), 24, 8);
-        $cdn_publisher_id = $this->createCdnUser(
-            $cp_publisher['CONTACTEMAIL'],
-            $cp_publisher['USER'],
-            $cp_publisher['CDN_USERNAME'],
-            $cdn_publisher_password,
-            $cdn_package['id']
-        );
+        try{
+            $cdn_publisher_id = $this->createCdnUser(
+                $cp_publisher['CONTACTEMAIL'],
+                $cp_publisher['USER'],
+                $cp_publisher['CDN_USERNAME'],
+                $cdn_publisher_password,
+                $cdn_package['id']
+            );
+        }catch(Aflexi_Common_Net_XmlRpc_Exception $e){
+            $user = $this->getCdnUser(
+                array('username' => $cp_publisher['CDN_USERNAME']),
+                array('extract' => array('id' => TRUE)));
+            if(!empty($user['id'])){
+                $this->updatePublisherPackage(
+                    $user['id'] . ',' . $this->getOperatorId(),
+                    $cdn_package['id']
+                );
+            }
+        }
+
         
         $cdn_oauth = $this->registerOAuth($cp_publisher['CDN_USERNAME']);
         
@@ -908,7 +939,6 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
         }
     }
 
-
     /****
      * Read details of local publisher cached in publishers.yml
      *
@@ -1016,7 +1046,7 @@ class Aflexi_CdnEnabler_Cpanel_UserHelper implements Aflexi_Common_Object_Initia
      * @param  string $name
      * @return array
      */
-           protected function nativeGetUser($name) {
+   protected function nativeGetUser($name) {
 
         $rt = Aflexi_CdnEnabler_Cpanel_PerlUtils::execScript(
             "user_get.pl",
