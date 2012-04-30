@@ -10,7 +10,7 @@ BEGIN{
 
 use base Cpanel::Lite::JsonWrapper;
 use Cpanel::Config::LoadUserDomains;
-use Cpanel::DomainKeys;
+use Cpanel::DKIM;
 
 my $m;
 my @domains;
@@ -25,7 +25,7 @@ if ($ENV{'REMOTE_USER'} eq 'root') {
     @domains = Cpanel::Config::LoadUserDomains::loaduserdomains({}, 0, 1);
 }
 else {
-    @domains = Cpanel::DomainKeys::get_all_domains_ref($ENV{'USER'});
+    @domains = Cpanel::DKIM::get_all_domains_ref($ENV{'USER'});
 }
 
 # JSON
